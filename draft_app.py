@@ -1,9 +1,12 @@
 import streamlit as st
+import pandas as pd
+import plotly.express as px
 from hero_data import HERO_DATA
 
-# --- LOGIC ---
+# --- LOGIC FUNCTIONS ---
 
 def generate_seq(bans):
+    """Generates the draft sequence based on ban count."""
     s = []
     if bans == 5:
         s.extend([('Ban', 'Blue'), ('Ban', 'Red'), ('Ban', 'Blue'), ('Ban', 'Red'), ('Ban', 'Blue'), ('Ban', 'Red')])
@@ -32,7 +35,77 @@ def display_icon_50px(hero_name):
             </div>
         """, unsafe_allow_html=True)
 
-# --- STREAMLIT APP ---
+def get_advantage_explanations(blue_scores, red_scores):
+    """
+    Compares stats to generate natural language advantages.
+    Returns lists of strings for Blue and Red advantages.
+    """
+    stats_cols = ['Durability', 'Offense', 'Control Effect', 'Mobility']
+    blue_adv = []
+    red_adv = []
+
+    for i, stat in enumerate(stats_cols):
+        b_val = blue_scores[i]
+        r_val = red_scores[i]
+        diff = b_val - r_val
+
+        # Threshold for significant difference (1.0 points on a 10-point scale)
+        if diff >= 1.0:
+            if stat == "Durability":
+                blue_adv.append("Higher Durability (Tankier front line)")
+            elif stat == "Offense":
+                blue_adv.append("Higher Offense (More burst damage)")
+            elif stat == "Control Effect":
+                blue_adv.append("Stronger Crowd Control (Better lockdown)")
+            elif stat == "Mobility":
+                blue_adv.append("Superior Mobility (Better rotations)")
+        elif diff <= -1.0:
+            if stat == "Durability":
+                red_adv.append("Higher Durability (Tankier front line)")
+            elif stat == "Offense":
+                red_adv.append("Higher Offense (More burst damage)")
+            elif stat == "Control Effect":
+                red_adv.append("Stronger Crowd Control (Better lockdown)")
+            elif stat == "Mobility":
+                red_adv.append("Superior Mobility (Better rotations)")
+            
+    return blue_adv, red_adv
+
+def analyze_draft(hero_stats, blue_team, red_team):
+    """
+    Calculates team stats based on the hero_stats DataFrame.
+    Returns a DataFrame for plotting and raw score lists.
+    """
+    stats_cols = ['Durability', 'Offense', 'Control Effect', 'Mobility']
+    
+    blue_scores = [0.0] * len(stats_cols)
+    red_scores = [0.0] * len(stats_cols)
+    
+    # Calculate Blue Stats
+    if blue_team:
+        valid_blue = [h for h in blue_team if h in hero_stats.index]
+        if valid_blue:
+            df_blue = hero_stats.loc[valid_blue]
+            blue_scores = df_blue[stats_cols].mean().tolist()
+
+    # Calculate Red Stats
+    if red_team:
+        valid_red = [h for h in red_team if h in hero_stats.index]
+        if valid_red:
+            df_red = hero_stats.loc[valid_red]
+            red_scores = df_red[stats_cols].mean().tolist()
+
+    # Create Comparison DataFrame
+    comp_df = pd.DataFrame({
+        'Metric': stats_cols,
+        'Blue': blue_scores,
+        'Red': red_scores
+    }).set_index('Metric')
+    
+    return comp_df, blue_scores, red_scores
+
+
+# --- MAIN APP ---
 
 def main():
     st.set_page_config(page_title="Voltaire.Draft", layout="wide")
@@ -46,7 +119,14 @@ def main():
         st.session_state.red_bans = []   
         st.session_state.ban_mode = 5
 
-    # 2. Determine current turn
+    # 2. Load Data from hero_data.py
+    try:
+        hero_stats = pd.DataFrame.from_dict(HERO_DATA, orient='index')
+    except Exception as e:
+        st.error(f"Error loading hero data: {e}")
+        return
+
+    # 3. Determine current turn
     sequence = generate_seq(st.session_state.ban_mode)
     total_steps = len(sequence)
     
@@ -54,54 +134,60 @@ def main():
     if st.session_state.step_index < total_steps:
         current_action, current_side = sequence[st.session_state.step_index]
 
-    # 3. Apply Dark Mode CSS
+    # 4. Apply Dark Mode CSS
     st.markdown("""
         <style>
         .stApp {
             background-color: #111111;
             color: white;
         }
-        /* Adjust standard Streamlit elements */
         h1, h2, h3, p, div, span, label {
             color: white !important;
         }
-        
-        /* BUTTON STYLING: Gray Background, White Text */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #444; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #666; 
+        }
         div.stButton > button {
             color: white !important;
-            background-color: #555555 !important; /* Gray */
+            background-color: #555555 !important;
             border-color: #555555 !important;
+            border-radius: 5px;
         }
         div.stButton > button:hover {
             color: white !important;
-            background-color: #777777 !important; /* Lighter gray on hover */
+            background-color: #777777 !important;
             border-color: #777777 !important;
         }
         </style>
     """, unsafe_allow_html=True)
 
-    # 4. TOP BAR: Watermark & Settings
+    # 5. TOP BAR
     col_header, col_settings = st.columns([3, 1])
-    
     with col_header:
         st.markdown("<h1 style='text-align: left; color: #FF4B4B;'>Voltaire.Draft</h1>", unsafe_allow_html=True)
 
     with col_settings:
-        # Ban Mode Selection (Buttons)
         b3, b5, rst = st.columns([1, 1, 1])
-        
         disabled = st.session_state.step_index > 0
         
         with b3:
             if st.button("3 Bans", disabled=disabled, use_container_width=True):
                 st.session_state.ban_mode = 3
                 st.rerun()
-        
         with b5:
             if st.button("5 Bans", disabled=disabled, use_container_width=True):
                 st.session_state.ban_mode = 5
                 st.rerun()
-        
         with rst:
             if st.button("Reset", use_container_width=True):
                 st.session_state.step_index = 0
@@ -111,50 +197,38 @@ def main():
                 st.session_state.red_bans = []
                 st.rerun()
 
-    # 5. 3-COLUMN LAYOUT
+    # 6. 3-COLUMN LAYOUT
     col_left, col_mid, col_right = st.columns([1, 2, 1], gap="small")
 
     # --- HELPER FOR SIDE COLUMN RENDERING ---
     def render_side_column(side_color, side_name, bans_list, team_list, is_active):
-        """
-        Renders the side column with stable header, single line bans, and single line picks.
-        """
-        # --- HEADER (Stable Height) ---
         st.markdown(f"### {side_name} Side")
-        
         bar_color = side_color if is_active else "#555"
         st.markdown(f"""
             <div style='height: 4px; background-color: {bar_color}; border-radius: 2px; margin: 10px 0 20px 0;'></div>
         """, unsafe_allow_html=True)
         
-        # --- BANS (Single Line) ---
         st.markdown("**Bans**")
         total_bans = 5 if st.session_state.ban_mode == 5 else 3
         ban_cols = st.columns(total_bans)
-        
         for i in range(total_bans):
             with ban_cols[i]:
                 if i < len(bans_list):
                     display_icon_50px(bans_list[i])
                 else:
-                    # Placeholder for stability
                     st.markdown("<div style='height: 50px;'></div>", unsafe_allow_html=True)
 
-        # SEPARATION LINE
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<hr style='margin: 15px 0; border-color: #333;'>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # --- PICKS (Single Line - Always 5) ---
         st.markdown("**Picks**")
         pick_cols = st.columns(5)
-        
         for i in range(5):
             with pick_cols[i]:
                 if i < len(team_list):
                     display_icon_50px(team_list[i])
                 else:
-                    # Placeholder for stability
                     st.markdown("<div style='height: 50px;'></div>", unsafe_allow_html=True)
 
     # --- LEFT COLUMN: BLUE SIDE ---
@@ -162,53 +236,92 @@ def main():
         is_blue_turn = (current_side == "Blue")
         render_side_column("blue", "🔵 Blue", st.session_state.blue_bans, st.session_state.blue_team, is_blue_turn)
 
-    # --- CENTER COLUMN: HERO POOL ---
+    # --- CENTER COLUMN: HERO POOL & ANALYSIS ---
     with col_mid:
         if st.session_state.step_index < total_steps:
             st.markdown(f"### Select to **{current_action}** ({current_side})")
             
-            # --- SEARCH BAR ---
             search_query = st.text_input("🔍 Search Hero...", "")
             
-            # Filter available heroes
             used = set(st.session_state.blue_team + st.session_state.red_team + st.session_state.blue_bans + st.session_state.red_bans)
             available_heroes = [h for h in HERO_DATA.keys() if h not in used]
             
-            # Filter by search query (Case insensitive)
             if search_query:
                 available_heroes = [h for h in available_heroes if search_query.lower() in h.lower()]
             
             if not available_heroes:
                 st.info("No heroes found matching your search.")
             else:
-                # Create Grid (4 columns per row)
                 for i in range(0, len(available_heroes), 4):
                     cols = st.columns(4)
                     batch = available_heroes[i:i+4]
-                    
                     for j, hero in enumerate(batch):
                         with cols[j]:
-                            # 1. Display 50px Icon
                             display_icon_50px(hero)
-                            
-                            # 2. Display Button
                             if st.button(hero, key=f"btn_{hero}", use_container_width=True):
-                                # --- UPDATE LOGIC ---
                                 if current_action == "Pick":
                                     if current_side == "Blue":
                                         st.session_state.blue_team.append(hero)
                                     else:
                                         st.session_state.red_team.append(hero)
-                                else: # Ban
+                                else: 
                                     if current_side == "Blue":
                                         st.session_state.blue_bans.append(hero)
                                     else:
                                         st.session_state.red_bans.append(hero)
-                                
                                 st.session_state.step_index += 1
                                 st.rerun()
-                            
-        else:
+        
+        # --- DRAFT ANALYSIS SECTION ---
+        total_picks = len(st.session_state.blue_team) + len(st.session_state.red_team)
+        
+        if total_picks >= 2:
+            st.markdown("---")
+            
+            # Calculate Stats
+            stats_df, blue_scores, red_scores = analyze_draft(hero_stats, st.session_state.blue_team, st.session_state.red_team)
+            
+            # Generate Advantages
+            blue_adv, red_adv = get_advantage_explanations(blue_scores, red_scores)
+            
+            with st.expander("📊 Draft Evaluation", expanded=True):
+                c1, c2 = st.columns(2)
+                
+                # Chart
+                with c1:
+                    st.write("**Team Comparison (Avg Stats)**")
+                    fig = px.bar(stats_df, barmode='group', color_discrete_map={'Blue': '#1f77b4', 'Red': '#d62728'})
+                    fig.update_layout(
+                        plot_bgcolor='#111111', 
+                        paper_bgcolor='#111111', 
+                        font_color='white',
+                        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                        margin=dict(l=0, r=0, t=0, b=0),
+                        yaxis=dict(gridcolor='#333')
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                # Advantage Text
+                with c2:
+                    st.write("**Team Analysis**")
+                    
+                    st.markdown("<div style='margin-bottom: 10px; font-weight: bold; color: #4da6ff;'>🔵 Blue Team Advantages</div>", unsafe_allow_html=True)
+                    if blue_adv:
+                        for adv in blue_adv:
+                            st.markdown(f"- {adv}")
+                    else:
+                        st.markdown("<small>No significant statistical advantage.</small>", unsafe_allow_html=True)
+                    
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    
+                    st.markdown("<div style='margin-bottom: 10px; font-weight: bold; color: #ff4d4d;'>🔴 Red Team Advantages</div>", unsafe_allow_html=True)
+                    if red_adv:
+                        for adv in red_adv:
+                            st.markdown(f"- {adv}")
+                    else:
+                        st.markdown("<small>No significant statistical advantage.</small>", unsafe_allow_html=True)
+
+        if st.session_state.step_index >= total_steps:
             st.success("🎉 **Draft Complete!**")
 
     # --- RIGHT COLUMN: RED SIDE ---
