@@ -53,7 +53,7 @@ def get_advantage_explanations(blue_scores, red_scores):
             if stat == "Durability":
                 blue_adv.append("Higher Durability (Tankier front line)")
             elif stat == "Offense":
-                blue_adv.append("Higher Offense (More burst damage)")
+                blue_adv.append("Higher Offense (Higher damage output)")
             elif stat == "Control Effect":
                 blue_adv.append("Stronger Crowd Control (Better lockdown)")
             elif stat == "Mobility":
@@ -62,7 +62,7 @@ def get_advantage_explanations(blue_scores, red_scores):
             if stat == "Durability":
                 red_adv.append("Higher Durability (Tankier front line)")
             elif stat == "Offense":
-                red_adv.append("Higher Offense (More burst damage)")
+                red_adv.append("Higher Offense (Higher damage output)")
             elif stat == "Control Effect":
                 red_adv.append("Stronger Crowd Control (Better lockdown)")
             elif stat == "Mobility":
@@ -235,7 +235,7 @@ def main():
     
     if st.session_state.step_index < total_steps:
         # Centered Turn Indicator
-        st.markdown(f"<h3 style='text-align: center; color: #FF4B4B;'>Select to **{current_action}** ({current_side})</h3>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='text-align: center; color: #FF4B4B;'>Select to {current_action} ({current_side})</h3>", unsafe_allow_html=True)
         
         # Search Bar (Full Width)
         search_query = st.text_input("🔍 Search Hero...", label_visibility="collapsed")
