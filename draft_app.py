@@ -142,19 +142,15 @@ def get_team_suggestion(hero_stats, team, opponent_team, own_bans, opp_bans):
             l1 = hero_stats.loc[hero]['Lane 1']
             l2 = hero_stats.loc[hero]['Lane 2']
             
-            # Count Lane 1
             if l1 != 'N/A':
                 lane_counts[l1] = lane_counts.get(l1, 0) + 1
-            # Count Lane 2
             if l2 != 'N/A':
                 lane_counts[l2] = lane_counts.get(l2, 0) + 1
 
     # 3. Determine Needed Lane
-    # Standard Composition Lanes
     key_lanes = ['EXP Lane', 'Jungle', 'Mid Lane', 'Gold Lane', 'Roaming']
     
     needed_lane = None
-    # Priority: Find the first lane with 0 count
     for lane in key_lanes:
         if lane_counts.get(lane, 0) == 0:
             needed_lane = lane
@@ -172,16 +168,13 @@ def get_team_suggestion(hero_stats, team, opponent_team, own_bans, opp_bans):
             l1 = hero_stats.loc[hero]['Lane 1']
             l2 = hero_stats.loc[hero]['Lane 2']
             
-            # Check if hero can play the needed lane
             if l1 == needed_lane or l2 == needed_lane:
-                # Calculate Total Stats
                 total_stats = hero_stats.loc[hero][stats_cols].sum()
                 candidates.append((hero, total_stats))
                 
     if not candidates:
         return None, [], f"No {needed_lane} heroes available in the pool."
         
-    # Sort by Total Stats (Desc) and take Top 3
     candidates.sort(key=lambda x: x[1], reverse=True)
     top_3_heroes = [x[0] for x in candidates[:3]]
     
@@ -359,7 +352,6 @@ def main():
         blue_adv, red_adv = get_advantage_explanations(blue_scores, red_scores)
         blue_prob, red_prob = calculate_win_probability(hero_stats, st.session_state.blue_team, st.session_state.red_team)
         
-        # Determine Suggestion for the losing team
         suggestion_lane = None
         suggestion_heroes = []
         suggestion_text = ""
@@ -421,16 +413,13 @@ def main():
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 
-                # Suggestion Block (Only renders if there are actual heroes suggested)
+                # Suggestion Block (No background color box)
                 if suggestion_heroes:
-                    st.markdown(f"<div style='border: 2px solid {suggestion_color}; border-radius: 10px; padding: 15px; background-color: #fcfcfc;'>", unsafe_allow_html=True)
-                    
-                    st.markdown(f"<h4 style='color: {suggestion_color}; margin-top: 0; margin-bottom: 10px;'>Suggestion for {suggestion_team_name} Team</h4>", unsafe_allow_html=True)
+                    st.markdown(f"<h4 style='color: {suggestion_color}; margin-top: 0;'>Suggestion for {suggestion_team_name} Team</h4>", unsafe_allow_html=True)
                     st.markdown(f"<small>Missing <b>{suggestion_lane}</b> lane. Consider these top picks:</small>", unsafe_allow_html=True)
                     
                     # Grid for 3 suggestions
                     s1, s2, s3 = st.columns(3)
-                    
                     suggestions_to_display = suggestion_heroes + [None] * (3 - len(suggestion_heroes))
                     
                     for i, hero in enumerate(suggestions_to_display):
@@ -441,8 +430,6 @@ def main():
                                 st.caption(f"{hero}")
                             else:
                                 st.empty()
-                                
-                    st.markdown("</div>", unsafe_allow_html=True)
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.write("Advantages")
