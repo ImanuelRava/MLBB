@@ -94,11 +94,43 @@ def analyze_draft(hero_stats, blue_team, red_team):
     
     return comp_df, blue_scores, red_scores
 
+def calculate_win_probability(hero_stats, blue_team, red_team):
+    """
+    Calculates win probability based on total 'Power' (sum of all stats).
+    Returns: Blue %, Red %
+    """
+    stats_cols = ['Durability', 'Offense', 'Control Effect', 'Mobility']
+    
+    # Calculate Total Power for Blue
+    blue_total = 0.0
+    if blue_team:
+        valid_blue = [h for h in blue_team if h in hero_stats.index]
+        if valid_blue:
+            blue_total = hero_stats.loc[valid_blue][stats_cols].sum().sum()
+
+    # Calculate Total Power for Red
+    red_total = 0.0
+    if red_team:
+        valid_red = [h for h in red_team if h in hero_stats.index]
+        if valid_red:
+            red_total = hero_stats.loc[valid_red][stats_cols].sum().sum()
+            
+    # Calculate Percentage
+    total_power = blue_total + red_total
+    
+    if total_power == 0:
+        return 50.0, 50.0
+    
+    blue_prob = (blue_total / total_power) * 100
+    red_prob = (red_total / total_power) * 100
+    
+    return round(blue_prob, 1), round(red_prob, 1)
+
 
 # --- MAIN APP ---
 
 def main():
-    st.set_page_config(page_title="Voltaire", layout="wide")
+    st.set_page_config(page_title="Voltaire.Draft", layout="wide")
 
     # 1. Initialize Session State
     if 'step_index' not in st.session_state:
@@ -123,7 +155,7 @@ def main():
     if st.session_state.step_index < total_steps:
         current_action, current_side = sequence[st.session_state.step_index]
 
-    # 4. CSS (Button Styling only)
+    # 4. CSS
     st.markdown("""
         <style>
         div.stButton > button {
@@ -216,7 +248,6 @@ def main():
     st.markdown("---")
     
     if st.session_state.step_index < total_steps:
-        # Color Logic
         if current_action == "Pick":
             action_color = "green"
         elif current_action == "Ban":
@@ -268,6 +299,9 @@ def main():
         stats_df, blue_scores, red_scores = analyze_draft(hero_stats, st.session_state.blue_team, st.session_state.red_team)
         blue_adv, red_adv = get_advantage_explanations(blue_scores, red_scores)
         
+        # Calculate Win Probability
+        blue_prob, red_prob = calculate_win_probability(hero_stats, st.session_state.blue_team, st.session_state.red_team)
+        
         with st.expander("📊 Draft Evaluation", expanded=True):
             c1, c2 = st.columns(2)
             
@@ -275,7 +309,6 @@ def main():
                 st.write("Team Comparison (Avg Stats)")
                 stats_df_long = stats_df.reset_index().melt(id_vars='Metric', var_name='Team', value_name='Score')
                 
-                # REMOVED: background='white' to make it transparent
                 chart = alt.Chart(stats_df_long).mark_bar().encode(
                     x=alt.X('Metric:N', title='Metric'),
                     y=alt.Y('Score:Q', title='Average Score', scale=alt.Scale(domain=[0, 10])),
@@ -287,27 +320,44 @@ def main():
                 ).properties(
                     width='container',
                     height=300
-                    # Background removed -> Transparent
                 )
                 st.altair_chart(chart, use_container_width=True)
             
             with c2:
                 st.write("Team Analysis")
-                st.markdown("<div style='margin-bottom: 10px; font-weight: bold; color: #1f77b4;'>🔵 Blue Team Advantages</div>", unsafe_allow_html=True)
+                
+                # Win Probability Bar
+                st.markdown("<b>Estimated Win Probability</b>", unsafe_allow_html=True)
+                st.markdown(f"""
+                    <div style='display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 5px;'>
+                        <span style='color: #1f77b4'>Blue: {blue_prob}%</span>
+                        <span style='color: #d62728'>Red: {red_prob}%</span>
+                    </div>
+                    <div style='display: flex; height: 20px; width: 100%; border-radius: 5px; overflow: hidden; background-color: #eee;'>
+                        <div style='width: {blue_prob}%; background-color: #1f77b4;'></div>
+                        <div style='width: {red_prob}%; background-color: #d62728;'></div>
+                    </div>
+                    <small style='color: #888; display: block; margin-top: 5px;'>Based on Total Stat Power (Durability + Offense + Control + Mobility)</small>
+                """, unsafe_allow_html=True)
+                
+                st.markdown("<br>", unsafe_allow_html=True)
+                
+                st.write("Advantages")
+                st.markdown("<div style='margin-bottom: 10px; font-weight: bold; color: #1f77b4;'>🔵 Blue Team</div>", unsafe_allow_html=True)
                 if blue_adv:
                     for adv in blue_adv:
                         st.markdown(f"- {adv}")
                 else:
-                    st.markdown("<small>No significant statistical advantage.</small>", unsafe_allow_html=True)
+                    st.markdown("<small>No significant advantage.</small>", unsafe_allow_html=True)
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 
-                st.markdown("<div style='margin-bottom: 10px; font-weight: bold; color: #d62728;'>🔴 Red Team Advantages</div>", unsafe_allow_html=True)
+                st.markdown("<div style='margin-bottom: 10px; font-weight: bold; color: #d62728;'>🔴 Red Team</div>", unsafe_allow_html=True)
                 if red_adv:
                     for adv in red_adv:
                         st.markdown(f"- {adv}")
                 else:
-                    st.markdown("<small>No significant statistical advantage.</small>", unsafe_allow_html=True)
+                    st.markdown("<small>No significant advantage.</small>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
