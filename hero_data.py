@@ -29,7 +29,7 @@ HERO_DATA = {
         "Role 1": "Fighter", "Role 2": "N/A", "Lane 1": "EXP Lane", "Lane 2": "Jungle",
         "Durability": 8.00, "Offense": 6.00, "Control Effect": 3.00, "Mobility": 3.00
     },
-    "Lapu-Lapu": {
+    "Lapu Lapu": {
         "Role 1": "Fighter", "Role 2": "N/A", "Lane 1": "EXP Lane", "Lane 2": "Gold Lane",
         "Durability": 8.00, "Offense": 5.00, "Control Effect": 3.00, "Mobility": 4.00
     },
@@ -309,7 +309,7 @@ HERO_DATA = {
         "Role 1": "Assassin", "Role 2": "N/A", "Lane 1": "Jungle", "Lane 2": "Roaming",
         "Durability": 3.00, "Offense": 8.00, "Control Effect": 5.00, "Mobility": 5.00
     },
-    "Popol and Kupa": {
+    "Popol & Kupa": {
         "Role 1": "Marksman", "Role 2": "N/A", "Lane 1": "Jungle", "Lane 2": "Gold Lane",
         "Durability": 2.00, "Offense": 7.00, "Control Effect": 6.00, "Mobility": 2.00
     },
@@ -461,7 +461,7 @@ HERO_DATA = {
         "Role 1": "Tank", "Role 2": "Fighter", "Lane 1": "Roaming", "Lane 2": "N/A",
         "Durability": 9.00, "Offense": 3.00, "Control Effect": 9.00, "Mobility": 2.00
     },
-    "Gatotkaca": {
+    "Gatot Kaca": {
         "Role 1": "Tank", "Role 2": "Fighter", "Lane 1": "Roaming", "Lane 2": "EXP Lane",
         "Durability": 9.00, "Offense": 3.00, "Control Effect": 9.00, "Mobility": 2.00
     },
