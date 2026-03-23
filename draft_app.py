@@ -123,15 +123,10 @@ def main():
     if st.session_state.step_index < total_steps:
         current_action, current_side = sequence[st.session_state.step_index]
 
-    # 4. CSS (White Background + Button Styling)
+    # 4. CSS (Removed Page Background, kept Button Styling)
     st.markdown("""
         <style>
-        /* Force White Background */
-        .stApp {
-            background-color: white;
-        }
-        
-        /* Style Buttons */
+        /* Button Styling only */
         div.stButton > button {
             color: white !important;
             background-color: #555555 !important;
@@ -185,7 +180,7 @@ def main():
             <div style='height: 4px; background-color: {bar_color}; border-radius: 2px; margin: 5px 0 15px 0;'></div>
         """, unsafe_allow_html=True)
         
-        # BANS (Removed Bold)
+        # BANS
         st.markdown("Bans")
         total_bans = 5 if st.session_state.ban_mode == 5 else 3
         ban_cols = st.columns(total_bans)
@@ -200,7 +195,7 @@ def main():
         st.markdown("<hr style='margin: 10px 0; border-color: #ddd;'>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # PICKS (Removed Bold)
+        # PICKS
         st.markdown("Picks")
         pick_cols = st.columns(5)
         for i in range(5):
@@ -222,7 +217,7 @@ def main():
     st.markdown("---")
     
     if st.session_state.step_index < total_steps:
-        # Robust Color Logic
+        # Color Logic
         if current_action == "Pick":
             action_color = "green"
         elif current_action == "Ban":
@@ -230,7 +225,6 @@ def main():
         else:
             action_color = "black"
 
-        # Render Text (No Bold)
         st.markdown(f"<h3 style='text-align: center; color: {action_color} !important;'>Select to {current_action} ({current_side})</h3>", unsafe_allow_html=True)
         
         search_query = st.text_input("🔍 Search Hero...", label_visibility="collapsed")
@@ -264,7 +258,6 @@ def main():
                             st.session_state.step_index += 1
                             st.rerun()
     else:
-        # Removed Bold from Draft Complete
         st.success("🎉 Draft Complete!")
 
     # --- SECTION 3: ANALYSIS ---
@@ -280,7 +273,6 @@ def main():
             c1, c2 = st.columns(2)
             
             with c1:
-                # Removed Bold from Header
                 st.write("Team Comparison (Avg Stats)")
                 stats_df_long = stats_df.reset_index().melt(id_vars='Metric', var_name='Team', value_name='Score')
                 
@@ -300,7 +292,6 @@ def main():
                 st.altair_chart(chart, use_container_width=True)
             
             with c2:
-                # Removed Bold from Header
                 st.write("Team Analysis")
                 st.markdown("<div style='margin-bottom: 10px; font-weight: bold; color: #1f77b4;'>🔵 Blue Team Advantages</div>", unsafe_allow_html=True)
                 if blue_adv:
