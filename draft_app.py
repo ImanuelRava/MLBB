@@ -26,11 +26,11 @@ def display_icon_50px(hero_name):
     try:
         st.image(f"{hero_name}.png", width=50)
     except:
-        # Fallback if image is missing
+        # Fallback if image is missing - Light Theme Colors
         st.markdown(f"""
-            <div style='width: 50px; height: 50px; background-color: #333; 
+            <div style='width: 50px; height: 50px; background-color: #f0f2f6; 
                         display: flex; align-items: center; justify-content: center; 
-                        border-radius: 5px; font-size: 10px; color: #aaa; margin: 0 auto;'>
+                        border-radius: 5px; font-size: 10px; color: #555; margin: 0 auto;'>
                 {hero_name[:2]}
             </div>
         """, unsafe_allow_html=True)
@@ -38,7 +38,6 @@ def display_icon_50px(hero_name):
 def get_advantage_explanations(blue_scores, red_scores):
     """
     Compares stats to generate natural language advantages.
-    Returns lists of strings for Blue and Red advantages.
     """
     stats_cols = ['Durability', 'Offense', 'Control Effect', 'Mobility']
     blue_adv = []
@@ -53,7 +52,7 @@ def get_advantage_explanations(blue_scores, red_scores):
             if stat == "Durability":
                 blue_adv.append("Higher Durability (Tankier front line)")
             elif stat == "Offense":
-                blue_adv.append("Higher Offense (Higher damage output)")
+                blue_adv.append("Higher Offense (More burst damage)")
             elif stat == "Control Effect":
                 blue_adv.append("Stronger Crowd Control (Better lockdown)")
             elif stat == "Mobility":
@@ -62,7 +61,7 @@ def get_advantage_explanations(blue_scores, red_scores):
             if stat == "Durability":
                 red_adv.append("Higher Durability (Tankier front line)")
             elif stat == "Offense":
-                red_adv.append("Higher Offense (Higher damage output)")
+                red_adv.append("Higher Offense (More burst damage)")
             elif stat == "Control Effect":
                 red_adv.append("Stronger Crowd Control (Better lockdown)")
             elif stat == "Mobility":
@@ -71,9 +70,7 @@ def get_advantage_explanations(blue_scores, red_scores):
     return blue_adv, red_adv
 
 def analyze_draft(hero_stats, blue_team, red_team):
-    """
-    Calculates team stats based on the hero_stats DataFrame.
-    """
+    """Calculates team stats based on the hero_stats DataFrame."""
     stats_cols = ['Durability', 'Offense', 'Control Effect', 'Mobility']
     
     blue_scores = [0.0] * len(stats_cols)
@@ -128,16 +125,10 @@ def main():
     if st.session_state.step_index < total_steps:
         current_action, current_side = sequence[st.session_state.step_index]
 
-    # 4. CSS (Dark Mode + Mobile Tweaks)
+    # 4. CSS (Minimal Styling for Buttons only)
     st.markdown("""
         <style>
-        .stApp {
-            background-color: #111111;
-            color: white;
-        }
-        h1, h2, h3, p, div, span, label {
-            color: white !important;
-        }
+        /* Style Buttons to be Gray with White Text */
         div.stButton > button {
             color: white !important;
             background-color: #555555 !important;
@@ -150,14 +141,10 @@ def main():
             background-color: #777777 !important;
             border-color: #777777 !important;
         }
-        /* Ensure elements don't get too small on mobile */
-        [data-testid="stVerticalBlock"] > [style*="flex-direction: column"] > [data-testid="stVerticalBlock"] {
-            gap: 1rem;
-        }
         </style>
     """, unsafe_allow_html=True)
 
-    # 5. TOP BAR (Settings & Title)
+    # 5. TOP BAR
     col_header, col_settings = st.columns([3, 1])
     with col_header:
         st.markdown("<h1 style='text-align: left; color: #FF4B4B; margin: 0;'>Voltaire.Draft</h1>", unsafe_allow_html=True)
@@ -186,12 +173,11 @@ def main():
     st.markdown("<br>", unsafe_allow_html=True)
 
     # --- SECTION 1: TEAMS (Top Row) ---
-    # Using 2 equal columns. On Mobile, these stack automatically.
     col_blue, col_red = st.columns(2, gap="large")
 
     def render_side_column(side_color, side_name, bans_list, team_list, is_active):
         st.markdown(f"### {side_name} Side")
-        bar_color = side_color if is_active else "#555"
+        bar_color = side_color if is_active else "#cccccc"
         st.markdown(f"""
             <div style='height: 4px; background-color: {bar_color}; border-radius: 2px; margin: 5px 0 15px 0;'></div>
         """, unsafe_allow_html=True)
@@ -208,7 +194,7 @@ def main():
                     st.markdown("<div style='height: 50px;'></div>", unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("<hr style='margin: 10px 0; border-color: #333;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin: 10px 0; border-color: #ddd;'>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
         # PICKS
@@ -229,18 +215,14 @@ def main():
         is_red_turn = (current_side == "Red")
         render_side_column("red", "🔴 Red", st.session_state.red_bans, st.session_state.red_team, is_red_turn)
 
-    # --- SECTION 2: STATUS & ACTION (Bottom Row) ---
-    
+    # --- SECTION 2: HERO SELECTION ---
     st.markdown("---")
     
     if st.session_state.step_index < total_steps:
-        # Centered Turn Indicator
-        st.markdown(f"<h3 style='text-align: center; color: #FF4B4B;'>Select to {current_action} ({current_side})</h3>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='text-align: center; color: #FF4B4B;'>Select to **{current_action}** ({current_side})</h3>", unsafe_allow_html=True)
         
-        # Search Bar (Full Width)
         search_query = st.text_input("🔍 Search Hero...", label_visibility="collapsed")
         
-        # Hero Grid
         used = set(st.session_state.blue_team + st.session_state.red_team + st.session_state.blue_bans + st.session_state.red_bans)
         available_heroes = [h for h in HERO_DATA.keys() if h not in used]
         
@@ -250,7 +232,6 @@ def main():
         if not available_heroes:
             st.info("No heroes found matching your search.")
         else:
-            # 4 Columns per row. On mobile, this wraps nicely.
             for i in range(0, len(available_heroes), 4):
                 cols = st.columns(4)
                 batch = available_heroes[i:i+4]
@@ -273,7 +254,7 @@ def main():
     else:
         st.success("🎉 **Draft Complete!**")
 
-    # --- SECTION 3: ANALYSIS (Full Width Bottom) ---
+    # --- SECTION 3: ANALYSIS ---
     total_picks = len(st.session_state.blue_team) + len(st.session_state.red_team)
     
     if total_picks >= 2:
@@ -299,13 +280,14 @@ def main():
                     tooltip=['Metric', 'Team', 'Score']
                 ).properties(
                     width='container',
-                    height=300
+                    height=300,
+                    background='white' # Sets chart background to white
                 )
                 st.altair_chart(chart, use_container_width=True)
             
             with c2:
                 st.write("**Team Analysis**")
-                st.markdown("<div style='margin-bottom: 10px; font-weight: bold; color: #4da6ff;'>🔵 Blue Team Advantages</div>", unsafe_allow_html=True)
+                st.markdown("<div style='margin-bottom: 10px; font-weight: bold; color: #1f77b4;'>🔵 Blue Team Advantages</div>", unsafe_allow_html=True)
                 if blue_adv:
                     for adv in blue_adv:
                         st.markdown(f"- {adv}")
@@ -314,7 +296,7 @@ def main():
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 
-                st.markdown("<div style='margin-bottom: 10px; font-weight: bold; color: #ff4d4d;'>🔴 Red Team Advantages</div>", unsafe_allow_html=True)
+                st.markdown("<div style='margin-bottom: 10px; font-weight: bold; color: #d62728;'>🔴 Red Team Advantages</div>", unsafe_allow_html=True)
                 if red_adv:
                     for adv in red_adv:
                         st.markdown(f"- {adv}")
