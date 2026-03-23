@@ -101,21 +101,18 @@ def calculate_win_probability(hero_stats, blue_team, red_team):
     """
     stats_cols = ['Durability', 'Offense', 'Control Effect', 'Mobility']
     
-    # Calculate Total Power for Blue
     blue_total = 0.0
     if blue_team:
         valid_blue = [h for h in blue_team if h in hero_stats.index]
         if valid_blue:
             blue_total = hero_stats.loc[valid_blue][stats_cols].sum().sum()
 
-    # Calculate Total Power for Red
     red_total = 0.0
     if red_team:
         valid_red = [h for h in red_team if h in hero_stats.index]
         if valid_red:
             red_total = hero_stats.loc[valid_red][stats_cols].sum().sum()
             
-    # Calculate Percentage
     total_power = blue_total + red_total
     
     if total_power == 0:
@@ -125,6 +122,74 @@ def calculate_win_probability(hero_stats, blue_team, red_team):
     red_prob = (red_total / total_power) * 100
     
     return round(blue_prob, 1), round(red_prob, 1)
+
+def get_team_suggestion(hero_stats, team, opponent_team, own_bans, opp_bans):
+    """
+    Analyzes team composition and suggests a hero.
+    Returns: (Needed Role, Suggested Hero Name, Reason)
+    """
+    # 1. Identify Available Heroes
+    used_heroes = set(team + opponent_team + own_bans + opp_bans)
+    available_heroes = [h for h in HERO_DATA.keys() if h not in used_heroes]
+    
+    if not available_heroes:
+        return None, None, "No heroes available to suggest."
+
+    # 2. Analyze Current Team Roles
+    role_counts = {}
+    for hero in team:
+        if hero in hero_stats.index:
+            r1 = hero_stats.loc[hero]['Role 1']
+            r2 = hero_stats.loc[hero]['Role 2']
+            
+            if r1 != 'N/A':
+                role_counts[r1] = role_counts.get(r1, 0) + 1
+            if r2 != 'N/A':
+                role_counts[r2] = role_counts.get(r2, 0) + 1
+
+    # 3. Determine Needed Role
+    # We want at least 1 of these roles: Tank, Fighter, Mage, Marksman, Support
+    key_roles = ['Tank', 'Fighter', 'Mage', 'Marksman', 'Support']
+    
+    needed_role = None
+    min_count = 100 
+    
+    for role in key_roles:
+        count = role_counts.get(role, 0)
+        # Priority 1: Missing Role (0 count)
+        if count == 0:
+            needed_role = role
+            break
+        # Priority 2: Lowest count (to balance)
+        if count < min_count:
+            min_count = count
+            needed_role = role
+
+    if not needed_role:
+        return None, None, "Team looks balanced."
+
+    # 4. Find Best Candidate for Needed Role
+    candidates = []
+    stats_cols = ['Durability', 'Offense', 'Control Effect', 'Mobility']
+    
+    for hero in available_heroes:
+        if hero in hero_stats.index:
+            r1 = hero_stats.loc[hero]['Role 1']
+            r2 = hero_stats.loc[hero]['Role 2']
+            
+            if r1 == needed_role or r2 == needed_role:
+                # Calculate Total Stats
+                total_stats = hero_stats.loc[hero][stats_cols].sum()
+                candidates.append((hero, total_stats))
+                
+    if not candidates:
+        return None, None, f"No {needed_role} heroes available in the pool."
+        
+    # Sort by Total Stats (Desc)
+    candidates.sort(key=lambda x: x[1], reverse=True)
+    best_hero = candidates[0][0]
+    
+    return needed_role, best_hero, f"Consider picking {best_hero} to fill the {needed_role} role and maximize stats."
 
 
 # --- MAIN APP ---
@@ -211,7 +276,6 @@ def main():
             <div style='height: 4px; background-color: {bar_color}; border-radius: 2px; margin: 5px 0 15px 0;'></div>
         """, unsafe_allow_html=True)
         
-        # BANS
         st.markdown("Bans")
         total_bans = 5 if st.session_state.ban_mode == 5 else 3
         ban_cols = st.columns(total_bans)
@@ -226,7 +290,6 @@ def main():
         st.markdown("<hr style='margin: 10px 0; border-color: #ddd;'>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # PICKS
         st.markdown("Picks")
         pick_cols = st.columns(5)
         for i in range(5):
@@ -298,9 +361,29 @@ def main():
         
         stats_df, blue_scores, red_scores = analyze_draft(hero_stats, st.session_state.blue_team, st.session_state.red_team)
         blue_adv, red_adv = get_advantage_explanations(blue_scores, red_scores)
-        
-        # Calculate Win Probability
         blue_prob, red_prob = calculate_win_probability(hero_stats, st.session_state.blue_team, st.session_state.red_team)
+        
+        # Determine Suggestion for the losing team
+        suggestion_role = None
+        suggestion_hero = None
+        suggestion_text = ""
+        suggestion_team_name = ""
+        
+        # Suggest for the team with lower probability
+        if blue_prob < red_prob:
+            suggestion_role, suggestion_hero, suggestion_text = get_team_suggestion(
+                hero_stats, st.session_state.blue_team, st.session_state.red_team, 
+                st.session_state.blue_bans, st.session_state.red_bans
+            )
+            suggestion_team_name = "Blue"
+            suggestion_color = "#1f77b4"
+        elif red_prob < blue_prob:
+            suggestion_role, suggestion_hero, suggestion_text = get_team_suggestion(
+                hero_stats, st.session_state.red_team, st.session_state.blue_team, 
+                st.session_state.red_bans, st.session_state.blue_bans
+            )
+            suggestion_team_name = "Red"
+            suggestion_color = "#d62728"
         
         with st.expander("📊 Draft Evaluation", expanded=True):
             c1, c2 = st.columns(2)
@@ -337,12 +420,31 @@ def main():
                         <div style='width: {blue_prob}%; background-color: #1f77b4;'></div>
                         <div style='width: {red_prob}%; background-color: #d62728;'></div>
                     </div>
-                    <small style='color: #888; display: block; margin-top: 5px;'>Based on Total Stat Power (Durability + Offense + Control + Mobility)</small>
+                    <small style='color: #888; display: block; margin-top: 5px;'>Based on Total Stat Power</small>
                 """, unsafe_allow_html=True)
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 
+                # Suggestion Block
+                if suggestion_hero:
+                    st.markdown(f"<div style='border: 2px solid {suggestion_color}; border-radius: 10px; padding: 15px; background-color: #f9f9f9;'>", unsafe_allow_html=True)
+                    
+                    st.markdown(f"<h4 style='color: {suggestion_color}; margin-top: 0;'>Suggestion for {suggestion_team_name} Team</h4>", unsafe_allow_html=True)
+                    
+                    col_sug_1, col_sug_2 = st.columns([1, 3])
+                    with col_sug_1:
+                        display_icon_50px(suggestion_hero)
+                        st.caption(suggestion_role)
+                        
+                    with col_sug_2:
+                        st.markdown(f"<b>Hero:</b> {suggestion_hero}", unsafe_allow_html=True)
+                        st.markdown(f"<b>Reason:</b> {suggestion_text}", unsafe_allow_html=True)
+                        
+                    st.markdown("</div>", unsafe_allow_html=True)
+                
+                st.markdown("<br>", unsafe_allow_html=True)
                 st.write("Advantages")
+                
                 st.markdown("<div style='margin-bottom: 10px; font-weight: bold; color: #1f77b4;'>🔵 Blue Team</div>", unsafe_allow_html=True)
                 if blue_adv:
                     for adv in blue_adv:
