@@ -98,7 +98,7 @@ def analyze_draft(hero_stats, blue_team, red_team):
 # --- MAIN APP ---
 
 def main():
-    st.set_page_config(page_title="Voltaire.Draft", layout="wide")
+    st.set_page_config(page_title="Voltaire", layout="wide")
 
     # 1. Initialize Session State
     if 'step_index' not in st.session_state:
@@ -123,10 +123,9 @@ def main():
     if st.session_state.step_index < total_steps:
         current_action, current_side = sequence[st.session_state.step_index]
 
-    # 4. CSS (Removed Page Background, kept Button Styling)
+    # 4. CSS (Button Styling only)
     st.markdown("""
         <style>
-        /* Button Styling only */
         div.stButton > button {
             color: white !important;
             background-color: #555555 !important;
@@ -276,6 +275,7 @@ def main():
                 st.write("Team Comparison (Avg Stats)")
                 stats_df_long = stats_df.reset_index().melt(id_vars='Metric', var_name='Team', value_name='Score')
                 
+                # REMOVED: background='white' to make it transparent
                 chart = alt.Chart(stats_df_long).mark_bar().encode(
                     x=alt.X('Metric:N', title='Metric'),
                     y=alt.Y('Score:Q', title='Average Score', scale=alt.Scale(domain=[0, 10])),
@@ -286,7 +286,8 @@ def main():
                     tooltip=['Metric', 'Team', 'Score']
                 ).properties(
                     width='container',
-                    height=300,
+                    height=300
+                    # Background removed -> Transparent
                 )
                 st.altair_chart(chart, use_container_width=True)
             
