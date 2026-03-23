@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 from hero_data import HERO_DATA
 
 # --- LOGIC FUNCTIONS ---
@@ -49,7 +48,7 @@ def get_advantage_explanations(blue_scores, red_scores):
         r_val = red_scores[i]
         diff = b_val - r_val
 
-        # Threshold for significant difference (1.0 points on a 10-point scale)
+        # Threshold for significant difference
         if diff >= 1.0:
             if stat == "Durability":
                 blue_adv.append("Higher Durability (Tankier front line)")
@@ -287,19 +286,10 @@ def main():
             with st.expander("📊 Draft Evaluation", expanded=True):
                 c1, c2 = st.columns(2)
                 
-                # Chart
+                # Chart - USING STREAMLIT NATIVE CHART
                 with c1:
                     st.write("**Team Comparison (Avg Stats)**")
-                    fig = px.bar(stats_df, barmode='group', color_discrete_map={'Blue': '#1f77b4', 'Red': '#d62728'})
-                    fig.update_layout(
-                        plot_bgcolor='#111111', 
-                        paper_bgcolor='#111111', 
-                        font_color='white',
-                        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                        margin=dict(l=0, r=0, t=0, b=0),
-                        yaxis=dict(gridcolor='#333')
-                    )
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.bar_chart(stats_df, use_container_width=True, color=["#1f77b4", "#d62728"])
                 
                 # Advantage Text
                 with c2:
