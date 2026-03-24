@@ -30,7 +30,7 @@ HERO_DATA = {
         "Durability": 4.00, "Offense": 8.00, "Control Effect": 2.00, "Mobility": 8.00, "Utility": 1.00
     },
     "Selena": {
-        "Role 1": "Assassin", "Role 2": "Mage", "Lane 1": "Mid Lane", "Lane 2": "Roaming",
+        "Role 1": "Assassin", "Role 2": "Mage", "Lane 1": "Mid Lane", "Lane 2": "Roam",
         "Durability": 3.00, "Offense": 7.00, "Control Effect": 7.00, "Mobility": 5.00, "Utility": 3.00
     },
     "Hayabusa": {
@@ -50,7 +50,7 @@ HERO_DATA = {
         "Durability": 5.00, "Offense": 7.00, "Control Effect": 1.00, "Mobility": 4.00, "Utility": 1.00
     },
     "Saber": {
-        "Role 1": "Assassin", "Role 2": "N/A", "Lane 1": "Jungle", "Lane 2": "Roaming",
+        "Role 1": "Assassin", "Role 2": "N/A", "Lane 1": "Jungle", "Lane 2": "Roam",
         "Durability": 3.00, "Offense": 7.00, "Control Effect": 4.00, "Mobility": 4.00, "Utility": 1.00
     },
     "Harley": {
@@ -58,7 +58,7 @@ HERO_DATA = {
         "Durability": 3.00, "Offense": 8.00, "Control Effect": 1.00, "Mobility": 5.00, "Utility": 1.00
     },
     "Natalia": {
-        "Role 1": "Assassin", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Assassin", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 3.00, "Offense": 7.00, "Control Effect": 3.00, "Mobility": 4.00, "Utility": 1.00
     },
     "Gusion": {
@@ -70,7 +70,7 @@ HERO_DATA = {
         "Durability": 4.00, "Offense": 8.00, "Control Effect": 1.00, "Mobility": 4.00, "Utility": 1.00
     },
     "Guinevere": {
-        "Role 1": "Fighter", "Role 2": "N/A", "Lane 1": "Jungler", "Lane 2": "Roaming",
+        "Role 1": "Fighter", "Role 2": "N/A", "Lane 1": "Jungle", "Lane 2": "Roam",
         "Durability": 7.00, "Offense": 6.00, "Control Effect": 8.00, "Mobility": 7.00, "Utility": 2.00
     },
     "Sora": {
@@ -78,11 +78,11 @@ HERO_DATA = {
         "Durability": 7.00, "Offense": 6.00, "Control Effect": 8.00, "Mobility": 5.00, "Utility": 1.00
     },
     "Badang": {
-        "Role 1": "Fighter", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "EXP Lane",
+        "Role 1": "Fighter", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "EXP Lane",
         "Durability": 7.00, "Offense": 5.00, "Control Effect": 7.00, "Mobility": 6.00, "Utility": 1.00
     },
     "Chou": {
-        "Role 1": "Fighter", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "EXP Lane",
+        "Role 1": "Fighter", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "EXP Lane",
         "Durability": 7.00, "Offense": 5.00, "Control Effect": 7.00, "Mobility": 7.00, "Utility": 1.00
     },
     "Freya": {
@@ -90,11 +90,11 @@ HERO_DATA = {
         "Durability": 7.00, "Offense": 8.00, "Control Effect": 5.00, "Mobility": 5.00, "Utility": 1.00
     },
     "Arlott": {
-        "Role 1": "Fighter", "Role 2": "Assassin", "Lane 1": "EXP Lane", "Lane 2": "Roaming",
+        "Role 1": "Fighter", "Role 2": "Assassin", "Lane 1": "EXP Lane", "Lane 2": "Roam",
         "Durability": 6.00, "Offense": 6.00, "Control Effect": 7.00, "Mobility": 5.00, "Utility": 1.00
     },
     "Hilda": {
-        "Role 1": "Fighter", "Role 2": "Tank", "Lane 1": "Roaming", "Lane 2": "EXP Lane",
+        "Role 1": "Fighter", "Role 2": "Tank", "Lane 1": "Roam", "Lane 2": "EXP Lane",
         "Durability": 9.00, "Offense": 5.00, "Control Effect": 5.00, "Mobility": 5.00, "Utility": 1.00
     },
     "Fredrinn": {
@@ -102,7 +102,7 @@ HERO_DATA = {
         "Durability": 9.00, "Offense": 3.00, "Control Effect": 8.00, "Mobility": 2.00, "Utility": 1.00
     },
     "Khaleed": {
-        "Role 1": "Fighter", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "EXP Lane",
+        "Role 1": "Fighter", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "EXP Lane",
         "Durability": 7.00, "Offense": 5.00, "Control Effect": 5.00, "Mobility": 5.00, "Utility": 1.00
     },
     "Martis": {
@@ -138,7 +138,7 @@ HERO_DATA = {
         "Durability": 4.00, "Offense": 8.00, "Control Effect": 6.00, "Mobility": 2.00, "Utility": 1.00
     },
     "Jawhead": {
-        "Role 1": "Fighter", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Fighter", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 7.00, "Offense": 4.00, "Control Effect": 6.00, "Mobility": 3.00, "Utility": 1.00
     },
     "Lapu Lapu": {
@@ -154,7 +154,7 @@ HERO_DATA = {
         "Durability": 7.00, "Offense": 7.00, "Control Effect": 3.00, "Mobility": 3.00, "Utility": 1.00
     },
     "Silvanna": {
-        "Role 1": "Fighter", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "Gold Lane",
+        "Role 1": "Fighter", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "Gold Lane",
         "Durability": 6.00, "Offense": 6.00, "Control Effect": 5.00, "Mobility": 3.00, "Utility": 1.00
     },
     "Zilong": {
@@ -218,7 +218,7 @@ HERO_DATA = {
         "Durability": 5.00, "Offense": 8.00, "Control Effect": 6.00, "Mobility": 6.00, "Utility": 1.00
     },
     "Kadita": {
-        "Role 1": "Mage", "Role 2": "Assassin", "Lane 1": "Mid Lane", "Lane 2": "Roaming",
+        "Role 1": "Mage", "Role 2": "Assassin", "Lane 1": "Mid Lane", "Lane 2": "Roam",
         "Durability": 3.00, "Offense": 8.00, "Control Effect": 8.00, "Mobility": 3.00, "Utility": 1.00
     },
     "Pharsa": {
@@ -342,31 +342,31 @@ HERO_DATA = {
         "Durability": 1.00, "Offense": 9.00, "Control Effect": 1.00, "Mobility": 1.00, "Utility": 1.00
     },
     "Baxia": {
-        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "Jungle", "Lane 2": "Roaming",
+        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "Jungle", "Lane 2": "Roam",
         "Durability": 10.00, "Offense": 4.00, "Control Effect": 6.00, "Mobility": 5.00, "Utility": 1.00
     },
     "Edith": {
-        "Role 1": "Tank", "Role 2": "Marksman", "Lane 1": "EXP Lane", "Lane 2": "Roaming",
+        "Role 1": "Tank", "Role 2": "Marksman", "Lane 1": "EXP Lane", "Lane 2": "Roam",
         "Durability": 8.00, "Offense": 6.00, "Control Effect": 9.00, "Mobility": 2.00, "Utility": 1.00
     },
     "Akai": {
-        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "Jungle", "Lane 2": "Roaming",
+        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "Jungle", "Lane 2": "Roam",
         "Durability": 8.00, "Offense": 4.00, "Control Effect": 9.00, "Mobility": 3.00, "Utility": 1.00
     },
     "Belerick": {
-        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "Jungle",
+        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "Jungle",
         "Durability": 10.00, "Offense": 3.00, "Control Effect": 8.00, "Mobility": 2.00, "Utility": 1.00
     },
     "Gloo": {
-        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "EXP Lane", "Lane 2": "Roaming",
+        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "EXP Lane", "Lane 2": "Roam",
         "Durability": 10.00, "Offense": 2.00, "Control Effect": 9.00, "Mobility": 2.00, "Utility": 3.00
     },
     "Grock": {
-        "Role 1": "Tank", "Role 2": "Fighter", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Tank", "Role 2": "Fighter", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 9.00, "Offense": 3.00, "Control Effect": 9.00, "Mobility": 2.00, "Utility": 5.00
     },
     "Johnson": {
-        "Role 1": "Tank", "Role 2": "Support", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Tank", "Role 2": "Support", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 8.00, "Offense": 3.00, "Control Effect": 7.00, "Mobility": 5.00, "Utility": 3.00
     },
     "Barats": {
@@ -374,7 +374,7 @@ HERO_DATA = {
         "Durability": 9.00, "Offense": 3.00, "Control Effect": 8.00, "Mobility": 2.00, "Utility": 2.00
     },
     "Atlas": {
-        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 7.00, "Offense": 1.00, "Control Effect": 9.00, "Mobility": 3.00, "Utility": 1.00
     },
     "Esmeralda": {
@@ -382,15 +382,15 @@ HERO_DATA = {
         "Durability": 9.00, "Offense": 3.00, "Control Effect": 2.00, "Mobility": 6.00, "Utility": 1.00
     },
     "Franco": {
-        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 7.00, "Offense": 1.00, "Control Effect": 10.00, "Mobility": 2.00, "Utility": 2.00
     },
     "Khufra": {
-        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 8.00, "Offense": 2.00, "Control Effect": 8.00, "Mobility": 2.00, "Utility": 1.00
     },
     "Tigreal": {
-        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 8.00, "Offense": 1.00, "Control Effect": 9.00, "Mobility": 2.00, "Utility": 1.00
     },
     "Uranus": {
@@ -406,7 +406,7 @@ HERO_DATA = {
         "Durability": 2.00, "Offense": 7.00, "Control Effect": 2.00, "Mobility": 7.00, "Utility": 2.00
     },
     "Kaja": {
-        "Role 1": "Support", "Role 2": "Fighter", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Support", "Role 2": "Fighter", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 7.00, "Offense": 3.00, "Control Effect": 8.00, "Mobility": 3.00, "Utility": 2.00
     },
     "Alice": {
@@ -414,7 +414,7 @@ HERO_DATA = {
         "Durability": 8.00, "Offense": 4.00, "Control Effect": 5.00, "Mobility": 5.00, "Utility": 2.00
     },
     "Helcurt": {
-        "Role 1": "Assassin", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "Jungle",
+        "Role 1": "Assassin", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "Jungle",
         "Durability": 4.00, "Offense": 7.00, "Control Effect": 3.00, "Mobility": 4.00, "Utility": 2.00
     },
     "Nana": {
@@ -442,11 +442,11 @@ HERO_DATA = {
         "Durability": 2.00, "Offense": 9.00, "Control Effect": 1.00, "Mobility": 2.00, "Utility": 2.00
     },
     "Gatot Kaca": {
-        "Role 1": "Tank", "Role 2": "Fighter", "Lane 1": "Roaming", "Lane 2": "EXP Lane",
+        "Role 1": "Tank", "Role 2": "Fighter", "Lane 1": "Roam", "Lane 2": "EXP Lane",
         "Durability": 9.00, "Offense": 3.00, "Control Effect": 9.00, "Mobility": 2.00, "Utility": 2.00
     },
     "Hylos": {
-        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Tank", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 10.00, "Offense": 2.00, "Control Effect": 9.00, "Mobility": 2.00, "Utility": 2.00
     },
     "Zhuxin": {
@@ -458,7 +458,7 @@ HERO_DATA = {
         "Durability": 1.00, "Offense": 10.00, "Control Effect": 2.00, "Mobility": 2.00, "Utility": 3.00
     },
     "Carmilla": {
-        "Role 1": "Support", "Role 2": "Tank", "Lane 1": "Roaming", "Lane 2": "EXP Lane",
+        "Role 1": "Support", "Role 2": "Tank", "Lane 1": "Roam", "Lane 2": "EXP Lane",
         "Durability": 9.00, "Offense": 2.00, "Control Effect": 8.00, "Mobility": 3.00, "Utility": 3.00
     },
     "Yi Sun-shin": {
@@ -478,7 +478,7 @@ HERO_DATA = {
         "Durability": 3.00, "Offense": 8.00, "Control Effect": 5.00, "Mobility": 1.00, "Utility": 4.00
     },
     "Minotaur": {
-        "Role 1": "Tank", "Role 2": "Support", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Tank", "Role 2": "Support", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 8.00, "Offense": 1.00, "Control Effect": 9.00, "Mobility": 3.00, "Utility": 4.00
     },
     "Luo Yi": {
@@ -486,11 +486,11 @@ HERO_DATA = {
         "Durability": 3.00, "Offense": 8.00, "Control Effect": 6.00, "Mobility": 1.00, "Utility": 5.00
     },
     "Kalea": {
-        "Role 1": "Support", "Role 2": "Fighter", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Support", "Role 2": "Fighter", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 6.00, "Offense": 2.00, "Control Effect": 8.00, "Mobility": 4.00, "Utility": 5.00
     },
     "Lolita": {
-        "Role 1": "Support", "Role 2": "Tank", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Support", "Role 2": "Tank", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 8.00, "Offense": 1.00, "Control Effect": 8.00, "Mobility": 2.00, "Utility": 5.00
     },
     "Faramis": {
@@ -498,11 +498,11 @@ HERO_DATA = {
         "Durability": 5.00, "Offense": 6.00, "Control Effect": 4.00, "Mobility": 3.00, "Utility": 5.00
     },
     "Mathilda": {
-        "Role 1": "Support", "Role 2": "Assassin", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Support", "Role 2": "Assassin", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 5.00, "Offense": 2.00, "Control Effect": 4.00, "Mobility": 4.00, "Utility": 6.00
     },
     "Estes": {
-        "Role 1": "Support", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Support", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 6.00, "Offense": 1.00, "Control Effect": 2.00, "Mobility": 1.00, "Utility": 6.00
     },
     "Marcel": {
@@ -510,23 +510,23 @@ HERO_DATA = {
         "Durability": 6.00, "Offense": 2.00, "Control Effect": 9.00, "Mobility": 3.00, "Utility": 7.00
     },
     "Angela": {
-        "Role 1": "Support", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Support", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 6.00, "Offense": 3.00, "Control Effect": 5.00, "Mobility": 2.00, "Utility": 7.00
     },
     "Rafaela": {
-        "Role 1": "Support", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Support", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 6.00, "Offense": 1.00, "Control Effect": 6.00, "Mobility": 2.00, "Utility": 7.00
     },
     "Floryn": {
-        "Role 1": "Support", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Support", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 6.00, "Offense": 1.00, "Control Effect": 4.00, "Mobility": 1.00, "Utility": 7.00
     },
     "Diggie": {
-        "Role 1": "Support", "Role 2": "N/A", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Support", "Role 2": "N/A", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 5.00, "Offense": 3.00, "Control Effect": 2.00, "Mobility": 1.00, "Utility": 7.00
     },
     "Chip": {
-        "Role 1": "Support", "Role 2": "Tank", "Lane 1": "Roaming", "Lane 2": "N/A",
+        "Role 1": "Support", "Role 2": "Tank", "Lane 1": "Roam", "Lane 2": "N/A",
         "Durability": 7.00, "Offense": 2.00, "Control Effect": 6.00, "Mobility": 7.00, "Utility": 9.00
     }
 }

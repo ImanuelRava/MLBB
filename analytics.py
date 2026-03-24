@@ -137,7 +137,7 @@ def get_team_suggestion(hero_stats, my_team, opp_team, own_bans, opp_bans):
     if not needed_lane:
         return None, [], "Team composition covers all lanes."
 
-    # 4. Determine Stat Deficit (Where is my team losing?)
+    # 4. Determine Stat Deficit
     # Calculate Average Stats for My Team
     my_scores = [0.0] * len(stats_cols)
     if my_team:
@@ -156,7 +156,7 @@ def get_team_suggestion(hero_stats, my_team, opp_team, own_bans, opp_bans):
     deficits = {}
     for i, col in enumerate(stats_cols):
         deficit = opp_scores[i] - my_scores[i]
-        if deficit > 0.5: # Only consider if deficit is significant
+        if deficit > 0.3:
             deficits[col] = deficit
     
     # Target Stat: The one we are losing the most in

@@ -84,7 +84,6 @@ def main():
             st.session_state.red_team = []
             st.session_state.blue_bans = []
             st.session_state.red_bans = []
-            # Clear searches if they exist
             if 'sim_search' in st.session_state: st.session_state.sim_search = ""
             if 'comp_search' in st.session_state: st.session_state.comp_search = ""
             st.rerun()

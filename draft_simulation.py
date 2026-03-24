@@ -4,7 +4,6 @@ from draft_logic import generate_seq
 from utils import display_icon_50px
 from hero_comparison import render_analytics_panel
 
-# Callback function for Simulation Mode
 def handle_hero_selection(hero_name, action, side):
     if action == "Pick":
         if side == "Blue":
@@ -18,11 +17,9 @@ def handle_hero_selection(hero_name, action, side):
             st.session_state.red_bans.append(hero_name)
     
     st.session_state.step_index += 1
-    # Clear the search bar safely via callback
     st.session_state.sim_search = ""
 
 def render_simulation_mode(hero_stats):
-    # Determine current turn
     sequence = generate_seq(st.session_state.ban_mode)
     total_steps = len(sequence)
     current_action, current_side = None, None
@@ -30,7 +27,6 @@ def render_simulation_mode(hero_stats):
     if st.session_state.step_index < total_steps:
         current_action, current_side = sequence[st.session_state.step_index]
 
-    # TEAMS (Side by Side)
     col_blue, col_red = st.columns(2, gap="large")
 
     def render_side_column(side_color, side_name, team_list, bans_list, is_active):
@@ -71,8 +67,9 @@ def render_simulation_mode(hero_stats):
         is_red_turn = (current_side == "Red")
         render_side_column("red", "Red", st.session_state.red_team, st.session_state.red_bans, is_red_turn)
 
-    # SELECTION
     st.markdown("---")
+    
+    # Display current turn instruction
     if st.session_state.step_index < total_steps:
         if current_action == "Pick": action_color = "green"
         elif current_action == "Ban": action_color = "orange"
@@ -81,24 +78,66 @@ def render_simulation_mode(hero_stats):
     else:
         st.success("🎉 Draft Complete!")
     
-    search_query = st.text_input("🔍 Search Hero...", label_visibility="collapsed", key="sim_search")
+    # --- Role & Lane Filter Logic ---
+    # Extract unique roles and lanes from HERO_DATA
+    roles = set()
+    lanes = set()
+    for hero_info in HERO_DATA.values():
+        roles.add(hero_info["Role 1"])
+        if hero_info["Role 2"] != "N/A":
+            roles.add(hero_info["Role 2"])
+        
+        lanes.add(hero_info["Lane 1"])
+        if hero_info["Lane 2"] != "N/A":
+            lanes.add(hero_info["Lane 2"])
+            
+    sorted_roles = sorted(list(roles))
+    sorted_lanes = sorted(list(lanes))
+    
+    # Search Bar (Above)
+    search_query = st.text_input("🔍 Search Hero...", label_visibility="visible", key="sim_search")
+    
+    # Filters (Below)
+    col_filter1, col_filter2 = st.columns(2)
+    with col_filter1:
+        selected_role = st.selectbox("Filter by Role", ["All"] + sorted_roles, key="role_filter")
+    with col_filter2:
+        selected_lane = st.selectbox("Filter by Lane", ["All"] + sorted_lanes, key="lane_filter")
+
+    # Filter heroes
     used = set(st.session_state.blue_team + st.session_state.red_team + st.session_state.blue_bans + st.session_state.red_bans)
     available_heroes = [h for h in HERO_DATA.keys() if h not in used]
-    if search_query: available_heroes = [h for h in available_heroes if search_query.lower() in h.lower()]
     
+    # Apply Search Filter
+    if search_query: 
+        available_heroes = [h for h in available_heroes if search_query.lower() in h.lower()]
+    
+    # Apply Role Filter
+    if selected_role != "All":
+        available_heroes = [
+            h for h in available_heroes 
+            if HERO_DATA[h]["Role 1"] == selected_role or HERO_DATA[h]["Role 2"] == selected_role
+        ]
+        
+    # Apply Lane Filter
+    if selected_lane != "All":
+        available_heroes = [
+            h for h in available_heroes 
+            if HERO_DATA[h]["Lane 1"] == selected_lane or HERO_DATA[h]["Lane 2"] == selected_lane
+        ]
+
+    # Display Heroes
     if not available_heroes:
-        st.info("No heroes found matching your search.")
-    else:
+        st.info("No heroes found matching your criteria.")
+    elif st.session_state.step_index < total_steps:
         for i in range(0, len(available_heroes), 4):
             cols = st.columns(4)
             batch = available_heroes[i:i+4]
             for j, hero in enumerate(batch):
                 with cols[j]:
                     display_icon_50px(hero)
-                    # Use on_click callback instead of if block
                     st.button(hero, key=f"btn_{hero}", use_container_width=True, 
                                on_click=handle_hero_selection, args=(hero, current_action, current_side))
 
-    # ANALYTICS (Bottom)
     st.markdown("---")
     render_analytics_panel(hero_stats, st.session_state.blue_team, st.session_state.red_team, st.session_state.blue_bans, st.session_state.red_bans)
