@@ -123,13 +123,18 @@ def calculate_win_probability(hero_stats, blue_team, red_team):
     
     return round(blue_prob, 1), round(red_prob, 1)
 
-def get_team_suggestion(hero_stats, team, opponent_team, own_bans, opp_bans):
+def get_team_suggestion(hero_stats, my_team, opp_team, own_bans, opp_bans):
     """
-    Analyzes team composition based on LANES.
-    Returns: (Needed Lane, [List of 3 Hero Names], Reason)
+    Analyzes team composition based on LANES and STAT BALANCE.
+    1. Identifies Missing Lane.
+    2. Identifies which Stat is causing the team to lose (Deficit).
+    3. Suggests heroes fitting the lane that patch the Deficit.
     """
+    stats_cols = ['Durability', 'Offense', 'Control Effect', 'Mobility']
+
     # 1. Identify Available Heroes
-    used_heroes = set(team + opponent_team + own_bans + opp_bans)
+    # CRITICAL: Filter out BOTH picked heroes AND banned heroes
+    used_heroes = set(my_team + opp_team + own_bans + opp_bans)
     available_heroes = [h for h in HERO_DATA.keys() if h not in used_heroes]
     
     if not available_heroes:
@@ -137,11 +142,10 @@ def get_team_suggestion(hero_stats, team, opponent_team, own_bans, opp_bans):
 
     # 2. Analyze Current Team Lanes
     lane_counts = {}
-    for hero in team:
+    for hero in my_team:
         if hero in hero_stats.index:
             l1 = hero_stats.loc[hero]['Lane 1']
             l2 = hero_stats.loc[hero]['Lane 2']
-            
             if l1 != 'N/A':
                 lane_counts[l1] = lane_counts.get(l1, 0) + 1
             if l2 != 'N/A':
@@ -149,7 +153,6 @@ def get_team_suggestion(hero_stats, team, opponent_team, own_bans, opp_bans):
 
     # 3. Determine Needed Lane
     key_lanes = ['EXP Lane', 'Jungle', 'Mid Lane', 'Gold Lane', 'Roaming']
-    
     needed_lane = None
     for lane in key_lanes:
         if lane_counts.get(lane, 0) == 0:
@@ -159,9 +162,35 @@ def get_team_suggestion(hero_stats, team, opponent_team, own_bans, opp_bans):
     if not needed_lane:
         return None, [], "Team composition covers all lanes."
 
-    # 4. Find Top 3 Candidates for Needed Lane
+    # 4. Determine Stat Deficit (Where is my team losing?)
+    # Calculate Average Stats for My Team
+    my_scores = [0.0] * len(stats_cols)
+    if my_team:
+        valid_my = [h for h in my_team if h in hero_stats.index]
+        if valid_my:
+            my_scores = hero_stats.loc[valid_my][stats_cols].mean().tolist()
+
+    # Calculate Average Stats for Opponent Team
+    opp_scores = [0.0] * len(stats_cols)
+    if opp_team:
+        valid_opp = [h for h in opp_team if h in hero_stats.index]
+        if valid_opp:
+            opp_scores = hero_stats.loc[valid_opp][stats_cols].mean().tolist()
+    
+    # Find the stat with the biggest gap (Opponent > Me)
+    deficits = {}
+    for i, col in enumerate(stats_cols):
+        deficit = opp_scores[i] - my_scores[i]
+        if deficit > 0.5: # Only consider if deficit is significant
+            deficits[col] = deficit
+    
+    # Target Stat: The one we are losing the most in
+    target_stat = None
+    if deficits:
+        target_stat = max(deficits, key=deficits.get)
+    
+    # 5. Find Top 3 Candidates
     candidates = []
-    stats_cols = ['Durability', 'Offense', 'Control Effect', 'Mobility']
     
     for hero in available_heroes:
         if hero in hero_stats.index:
@@ -169,16 +198,32 @@ def get_team_suggestion(hero_stats, team, opponent_team, own_bans, opp_bans):
             l2 = hero_stats.loc[hero]['Lane 2']
             
             if l1 == needed_lane or l2 == needed_lane:
+                # Calculate Score
                 total_stats = hero_stats.loc[hero][stats_cols].sum()
-                candidates.append((hero, total_stats))
+                
+                if target_stat:
+                    # Score heavily weighted towards the missing stat
+                    balance_score = (hero_stats.loc[hero][target_stat] * 2.5) + total_stats
+                else:
+                    # If no deficit, just use total stats
+                    balance_score = total_stats
+                
+                candidates.append((hero, balance_score))
                 
     if not candidates:
         return None, [], f"No {needed_lane} heroes available in the pool."
         
+    # Sort by Score
     candidates.sort(key=lambda x: x[1], reverse=True)
     top_3_heroes = [x[0] for x in candidates[:3]]
     
-    return needed_lane, top_3_heroes, f"Consider picking for {needed_lane} to balance the team."
+    reason = f"Missing <b>{needed_lane}</b> lane. "
+    if target_stat:
+        reason += f"Team is weak in {target_stat}. Suggested to improve <b>{target_stat}</b>."
+    else:
+        reason += "Suggested to improve overall strength."
+        
+    return needed_lane, top_3_heroes, reason
 
 
 # --- MAIN APP ---
@@ -311,6 +356,7 @@ def main():
         
         search_query = st.text_input("🔍 Search Hero...", label_visibility="collapsed")
         
+        # Filter available heroes for selection (Excludes both picks and bans)
         used = set(st.session_state.blue_team + st.session_state.red_team + st.session_state.blue_bans + st.session_state.red_bans)
         available_heroes = [h for h in HERO_DATA.keys() if h not in used]
         
@@ -413,10 +459,10 @@ def main():
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 
-                # Suggestion Block (No background color box)
+                # Suggestion Block (No background box)
                 if suggestion_heroes:
                     st.markdown(f"<h4 style='color: {suggestion_color}; margin-top: 0;'>Suggestion for {suggestion_team_name} Team</h4>", unsafe_allow_html=True)
-                    st.markdown(f"<small>Missing <b>{suggestion_lane}</b> lane. Consider these top picks:</small>", unsafe_allow_html=True)
+                    st.markdown(f"<small>{suggestion_text}</small>", unsafe_allow_html=True)
                     
                     # Grid for 3 suggestions
                     s1, s2, s3 = st.columns(3)
