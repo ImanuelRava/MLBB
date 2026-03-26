@@ -3,8 +3,8 @@ import streamlit as st
 def display_icon_50px(hero_name):
     """Helper to display a consistent 50px icon or a placeholder."""
     try:
-        # Try to load the image file
-        st.image(f"{hero_name}.png", width=50)
+        # Updated path to include the 'hero_icon' folder
+        st.image(f"hero_icon/{hero_name}.png", width=50)
     except:
         # Fallback if image is missing
         st.markdown(f"""

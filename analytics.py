@@ -1,5 +1,6 @@
 import pandas as pd
-import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from hero_data import HERO_DATA
 
 # Define the 5 metrics we are now tracking
@@ -101,21 +102,14 @@ def get_advantage_explanations(blue_scores, red_scores):
 def get_team_suggestion(hero_stats, my_team, opp_team, own_bans, opp_bans):
     """
     Analyzes team composition based on LANES and STAT BALANCE.
-    1. Identifies Missing Lane.
-    2. Identifies which Stat is causing the team to lose (Deficit).
-    3. Suggests heroes fitting the lane that patch the Deficit.
     """
     stats_cols = ALL_STATS
-
-    # 1. Identify Available Heroes
-    # CRITICAL: Filter out BOTH picked heroes AND banned heroes
     used_heroes = set(my_team + opp_team + own_bans + opp_bans)
     available_heroes = [h for h in HERO_DATA.keys() if h not in used_heroes]
     
     if not available_heroes:
         return None, [], "No heroes available to suggest."
 
-    # 2. Analyze Current Team Lanes
     lane_counts = {}
     for hero in my_team:
         if hero in hero_stats.index:
@@ -126,7 +120,6 @@ def get_team_suggestion(hero_stats, my_team, opp_team, own_bans, opp_bans):
             if l2 != 'N/A':
                 lane_counts[l2] = lane_counts.get(l2, 0) + 1
 
-    # 3. Determine Needed Lane
     key_lanes = ['EXP Lane', 'Jungle', 'Mid Lane', 'Gold Lane', 'Roaming']
     needed_lane = None
     for lane in key_lanes:
@@ -137,34 +130,28 @@ def get_team_suggestion(hero_stats, my_team, opp_team, own_bans, opp_bans):
     if not needed_lane:
         return None, [], "Team composition covers all lanes."
 
-    # 4. Determine Stat Deficit
-    # Calculate Average Stats for My Team
     my_scores = [0.0] * len(stats_cols)
     if my_team:
         valid_my = [h for h in my_team if h in hero_stats.index]
         if valid_my:
             my_scores = hero_stats.loc[valid_my][stats_cols].mean().tolist()
 
-    # Calculate Average Stats for Opponent Team
     opp_scores = [0.0] * len(stats_cols)
     if opp_team:
         valid_opp = [h for h in opp_team if h in hero_stats.index]
         if valid_opp:
             opp_scores = hero_stats.loc[valid_opp][stats_cols].mean().tolist()
     
-    # Find the stat with the biggest gap (Opponent > Me)
     deficits = {}
     for i, col in enumerate(stats_cols):
         deficit = opp_scores[i] - my_scores[i]
         if deficit > 0.3:
             deficits[col] = deficit
     
-    # Target Stat: The one we are losing the most in
     target_stat = None
     if deficits:
         target_stat = max(deficits, key=deficits.get)
     
-    # 5. Find Top 3 Candidates
     candidates = []
     
     for hero in available_heroes:
@@ -173,14 +160,11 @@ def get_team_suggestion(hero_stats, my_team, opp_team, own_bans, opp_bans):
             l2 = hero_stats.loc[hero]['Lane 2']
             
             if l1 == needed_lane or l2 == needed_lane:
-                # Calculate Score
                 total_stats = hero_stats.loc[hero][stats_cols].sum()
                 
                 if target_stat:
-                    # Score heavily weighted towards the missing stat
                     balance_score = (hero_stats.loc[hero][target_stat] * 2.5) + total_stats
                 else:
-                    # If no deficit, just use total stats
                     balance_score = total_stats
                 
                 candidates.append((hero, balance_score))
@@ -188,7 +172,6 @@ def get_team_suggestion(hero_stats, my_team, opp_team, own_bans, opp_bans):
     if not candidates:
         return None, [], f"No {needed_lane} heroes available in the pool."
         
-    # Sort by Score
     candidates.sort(key=lambda x: x[1], reverse=True)
     top_3_heroes = [x[0] for x in candidates[:3]]
     
@@ -202,38 +185,112 @@ def get_team_suggestion(hero_stats, my_team, opp_team, own_bans, opp_bans):
 
 def create_radar_chart(stats_df_long):
     """
-    Creates a spider/radar chart to compare team stats.
-    Expects a DataFrame with columns: 'Metric', 'Team', 'Score'.
-    Background is set to transparent.
+    Creates a spider/radar chart with a PENTAGONAL border and a comparison table.
+    - Border: Pentagon (5-sided polygon).
+    - Interaction: Non-rotateable.
+    - Includes a data table below the chart.
     """
-    fig = px.line_polar(
-        stats_df_long, 
-        r='Score', 
-        theta='Metric', 
-        color='Team', 
-        line_close=True,
-        range_r=[0, 10], # Assuming stats are on a 0-10 scale
-        color_discrete_map={'Blue': '#1f77b4', 'Red': '#d62728'} # Match your app colors
+    
+    # 1. Prepare Data
+    # Pivot long format to wide for easier access
+    df_wide = stats_df_long.pivot(index='Metric', columns='Team', values='Score').reset_index()
+    
+    # Ensure specific order
+    metric_order = ALL_STATS
+    df_wide['Metric'] = pd.Categorical(df_wide['Metric'], categories=metric_order, ordered=True)
+    df_wide = df_wide.sort_values('Metric')
+    
+    metrics = df_wide['Metric'].tolist()
+    blue_vals = df_wide['Blue'].tolist()
+    red_vals = df_wide['Red'].tolist()
+    
+    # Close the loop for radar lines
+    metrics_closed = metrics + [metrics[0]]
+    blue_vals_closed = blue_vals + [blue_vals[0]]
+    red_vals_closed = red_vals + [red_vals[0]]
+    
+    # 2. Create Subplots (Radar top, Table bottom)
+    fig = make_subplots(
+        rows=2, cols=1,
+        row_heights=[0.6, 0.4],
+        specs=[[{'type': 'polar'}], [{'type': 'table'}]],
+        vertical_spacing=0.05
     )
-    
-    # Fill the area under the lines
-    fig.update_traces(fill='toself')
-    
+
+    # 3. Add Radar Traces
+    # Blue Team
+    fig.add_trace(
+        go.Scatterpolar(
+            r=blue_vals_closed,
+            theta=metrics_closed,
+            name='Blue',
+            fill='toself',
+            line_color='#1f77b4',
+            opacity=0.8
+        ),
+        row=1, col=1
+    )
+
+    # Red Team
+    fig.add_trace(
+        go.Scatterpolar(
+            r=red_vals_closed,
+            theta=metrics_closed,
+            name='Red',
+            fill='toself',
+            line_color='#d62728',
+            opacity=0.8
+        ),
+        row=1, col=1
+    )
+
+    # 4. Add Data Table
+    cell_values = [
+        df_wide['Metric'].tolist(),
+        [f"{x:.2f}" for x in df_wide['Blue'].tolist()],
+        [f"{x:.2f}" for x in df_wide['Red'].tolist()]
+    ]
+
+    fig.add_trace(
+        go.Table(
+            header=dict(
+                values=['<b>Metric</b>', '<b>Blue</b>', '<b>Red</b>'],
+                fill_color='#f0f2f6',
+                align='center',
+                font=dict(size=12, color='black')
+            ),
+            cells=dict(
+                values=cell_values,
+                fill_color=[['white'], ['#e6f2ff', 'white']],
+                align='center',
+                font=dict(size=11)
+            )
+        ),
+        row=2, col=1
+    )
+
+    # 5. Update Layout
+    # shape='polygon' creates the pentagonal grid/border because we have 5 categories.
     fig.update_layout(
+        dragmode=False, # Make non-rotateable
+        showlegend=True,
+        legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="center", x=0.5),
+        margin=dict(l=20, r=20, t=30, b=20),
         polar=dict(
+            shape='polygon', # THIS sets the pentagonal border/grid
             radialaxis=dict(
                 visible=True,
                 range=[0, 10],
-                showticklabels=False, # Hide numbers on axis for cleaner look
-                gridcolor='lightgray' # Grid line color
+                showticklabels=False,
+                gridcolor='lightgray',
+                showline=False
             ),
             angularaxis=dict(
-                gridcolor='lightgray' # Angular grid line color
-            )
-        ),
-        showlegend=True,
-        margin=dict(l=20, r=20, t=20, b=20), # Tight margins
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5)
+                gridcolor='lightgray',
+                showline=False
+            ),
+            bgcolor='rgba(0,0,0,0)'
+        )
     )
-    
+
     return fig
