@@ -7,7 +7,7 @@ import draft_comparison as dc
 # --- MAIN APP ---
 
 def main():
-    st.set_page_config(page_title="Zahl's Index", layout="wide")
+    st.set_page_config(page_title="Zahl's Index", layout="wide", page_icon="favicon.ico")
 
     # 1. Initialize Session State
     if 'step_index' not in st.session_state:
