@@ -7,7 +7,7 @@ import draft_comparison as dc
 # --- MAIN APP ---
 
 def main():
-    st.set_page_config(page_title="Voltaire.Draft", layout="wide")
+    st.set_page_config(page_title="Zahl's Index", layout="wide")
 
     # 1. Initialize Session State
     if 'step_index' not in st.session_state:
@@ -55,7 +55,7 @@ def main():
     col_header, col_mode, col_settings = st.columns([3, 1.5, 1])
 
     with col_header:
-        st.markdown("<h1 style='text-align: left; color: #FF4B4B; margin: 0;'>Voltaire.Draft</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: left; color: #FF4B4B; margin: 0;'>Zahl's Index</h1>", unsafe_allow_html=True)
 
     with col_mode:
         st.session_state.draft_mode = st.radio(

@@ -72,10 +72,7 @@ def render_comparison_mode(hero_stats):
     st.markdown("---")
     st.markdown("### Hero Selection")
     
-    # CSS to style the buttons based on the active target side
-    # We target the buttons in the second horizontal block (the buttons below)
-    # Note: CSS selectors rely on Streamlit's internal structure which generally uses data-testid="stHorizontalBlock"
-    
+    # CSS for active target button
     active_blue_css = """
     div[data-testid="stHorizontalBlock"]:nth-of-type(2) > div:nth-child(1) button {
         background-color: #2196F3 !important;
@@ -83,7 +80,6 @@ def render_comparison_mode(hero_stats):
         border: none !important;
     }
     """
-    
     active_red_css = """
     div[data-testid="stHorizontalBlock"]:nth-of-type(2) > div:nth-child(2) button {
         background-color: #F44336 !important;
@@ -97,6 +93,7 @@ def render_comparison_mode(hero_stats):
     else:
         st.markdown(f"<style>{active_red_css}</style>", unsafe_allow_html=True)
     
+    # Row 2.1: Buttons and Search
     col_t1, col_t2, col_search = st.columns([1, 1, 4])
     
     with col_t1:
@@ -112,10 +109,51 @@ def render_comparison_mode(hero_stats):
     with col_search:
         search_query = st.text_input("🔍 Search Hero...", label_visibility="collapsed", key="comp_search")
 
+    # Row 2.2: Filters (Added from Simulation Mode logic)
+    # Extract unique roles and lanes from HERO_DATA
+    roles = set()
+    lanes = set()
+    for hero_info in HERO_DATA.values():
+        roles.add(hero_info["Role 1"])
+        if hero_info["Role 2"] != "N/A":
+            roles.add(hero_info["Role 2"])
+        
+        lanes.add(hero_info["Lane 1"])
+        if hero_info["Lane 2"] != "N/A":
+            lanes.add(hero_info["Lane 2"])
+            
+    sorted_roles = sorted(list(roles))
+    sorted_lanes = sorted(list(lanes))
+    
+    col_filter1, col_filter2 = st.columns(2)
+    with col_filter1:
+        selected_role = st.selectbox("Filter by Role", ["All"] + sorted_roles, key="comp_role_filter")
+    with col_filter2:
+        selected_lane = st.selectbox("Filter by Lane", ["All"] + sorted_lanes, key="comp_lane_filter")
+
+    # Filter heroes
     used = set(st.session_state.blue_team + st.session_state.red_team)
     available_heroes = [h for h in HERO_DATA.keys() if h not in used]
-    if search_query: available_heroes = [h for h in available_heroes if search_query.lower() in h.lower()]
+    
+    # Apply Search Filter
+    if search_query: 
+        available_heroes = [h for h in available_heroes if search_query.lower() in h.lower()]
+    
+    # Apply Role Filter
+    if selected_role != "All":
+        available_heroes = [
+            h for h in available_heroes 
+            if HERO_DATA[h]["Role 1"] == selected_role or HERO_DATA[h]["Role 2"] == selected_role
+        ]
+        
+    # Apply Lane Filter
+    if selected_lane != "All":
+        available_heroes = [
+            h for h in available_heroes 
+            if HERO_DATA[h]["Lane 1"] == selected_lane or HERO_DATA[h]["Lane 2"] == selected_lane
+        ]
 
+    # Display Heroes Grid
     if not available_heroes:
         st.info("All heroes picked or none match search.")
     else:

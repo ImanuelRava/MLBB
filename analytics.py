@@ -1,10 +1,9 @@
 import pandas as pd
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 from hero_data import HERO_DATA
 
 # Define the 5 metrics we are now tracking
-ALL_STATS = ['Durability', 'Offense', 'Control Effect', 'Mobility', 'Utility']
+ALL_STATS = ['Durability', 'Offense', 'Crowd Control', 'Mobility', 'Lane Control']
 
 def analyze_draft(hero_stats, blue_team, red_team):
     """Calculates team stats based on the hero_stats DataFrame."""
@@ -75,27 +74,27 @@ def get_advantage_explanations(blue_scores, red_scores):
 
         if diff >= 1.0:
             if stat == "Durability":
-                blue_adv.append("Higher Durability (Tankier front line)")
+                blue_adv.append("Higher Durability")
             elif stat == "Offense":
-                blue_adv.append("Higher Offense (More burst damage)")
-            elif stat == "Control Effect":
-                blue_adv.append("Stronger Crowd Control (Better lockdown)")
+                blue_adv.append("Higher Offense")
+            elif stat == "Crowd Control":
+                blue_adv.append("Stronger Crowd Control")
             elif stat == "Mobility":
-                blue_adv.append("Superior Mobility (Better rotations)")
-            elif stat == "Utility":
-                blue_adv.append("Higher Utility (Better Team Buffs/Support)")
+                blue_adv.append("Superior Rotation")
+            elif stat == "Lane Control":
+                blue_adv.append("Higher Lane Control")
                 
         elif diff <= -1.0:
             if stat == "Durability":
-                red_adv.append("Higher Durability (Tankier front line)")
+                red_adv.append("Higher Durability")
             elif stat == "Offense":
-                red_adv.append("Higher Offense (More burst damage)")
-            elif stat == "Control Effect":
-                red_adv.append("Stronger Crowd Control (Better lockdown)")
+                red_adv.append("Higher Offense")
+            elif stat == "Crowd Control":
+                red_adv.append("Stronger Crowd Control")
             elif stat == "Mobility":
-                red_adv.append("Superior Mobility (Better rotations)")
-            elif stat == "Utility":
-                red_adv.append("Higher Utility (Better Team Buffs/Support)")
+                red_adv.append("Superior Rotation")
+            elif stat == "Lane Control":
+                red_adv.append("Higher Lane Control")
             
     return blue_adv, red_adv
 
@@ -185,17 +184,13 @@ def get_team_suggestion(hero_stats, my_team, opp_team, own_bans, opp_bans):
 
 def create_radar_chart(stats_df_long):
     """
-    Creates a spider/radar chart with a PENTAGONAL border and a comparison table.
-    - Border: Pentagon (5-sided polygon).
-    - Interaction: Non-rotateable.
-    - Includes a data table below the chart.
+    Creates a spider/radar chart with a PENTAGONAL border.
+    Table removed per request.
     """
     
     # 1. Prepare Data
-    # Pivot long format to wide for easier access
     df_wide = stats_df_long.pivot(index='Metric', columns='Team', values='Score').reset_index()
     
-    # Ensure specific order
     metric_order = ALL_STATS
     df_wide['Metric'] = pd.Categorical(df_wide['Metric'], categories=metric_order, ordered=True)
     df_wide = df_wide.sort_values('Metric')
@@ -204,21 +199,15 @@ def create_radar_chart(stats_df_long):
     blue_vals = df_wide['Blue'].tolist()
     red_vals = df_wide['Red'].tolist()
     
-    # Close the loop for radar lines
+    # Close the loop
     metrics_closed = metrics + [metrics[0]]
     blue_vals_closed = blue_vals + [blue_vals[0]]
     red_vals_closed = red_vals + [red_vals[0]]
     
-    # 2. Create Subplots (Radar top, Table bottom)
-    fig = make_subplots(
-        rows=2, cols=1,
-        row_heights=[0.6, 0.4],
-        specs=[[{'type': 'polar'}], [{'type': 'table'}]],
-        vertical_spacing=0.05
-    )
+    # 2. Create Figure (Simple Figure, no subplots)
+    fig = go.Figure()
 
     # 3. Add Radar Traces
-    # Blue Team
     fig.add_trace(
         go.Scatterpolar(
             r=blue_vals_closed,
@@ -227,11 +216,9 @@ def create_radar_chart(stats_df_long):
             fill='toself',
             line_color='#1f77b4',
             opacity=0.8
-        ),
-        row=1, col=1
+        )
     )
 
-    # Red Team
     fig.add_trace(
         go.Scatterpolar(
             r=red_vals_closed,
@@ -240,54 +227,25 @@ def create_radar_chart(stats_df_long):
             fill='toself',
             line_color='#d62728',
             opacity=0.8
-        ),
-        row=1, col=1
+        )
     )
 
-    # 4. Add Data Table
-    cell_values = [
-        df_wide['Metric'].tolist(),
-        [f"{x:.2f}" for x in df_wide['Blue'].tolist()],
-        [f"{x:.2f}" for x in df_wide['Red'].tolist()]
-    ]
-
-    fig.add_trace(
-        go.Table(
-            header=dict(
-                values=['<b>Metric</b>', '<b>Blue</b>', '<b>Red</b>'],
-                fill_color='#f0f2f6',
-                align='center',
-                font=dict(size=12, color='black')
-            ),
-            cells=dict(
-                values=cell_values,
-                fill_color=[['white'], ['#e6f2ff', 'white']],
-                align='center',
-                font=dict(size=11)
-            )
-        ),
-        row=2, col=1
-    )
-
-    # 5. Update Layout
-    # shape='polygon' creates the pentagonal grid/border because we have 5 categories.
+    # 4. Update Layout
     fig.update_layout(
-        dragmode=False, # Make non-rotateable
+        dragmode=False,
         showlegend=True,
         legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="center", x=0.5),
         margin=dict(l=20, r=20, t=30, b=20),
         polar=dict(
-            shape='polygon', # THIS sets the pentagonal border/grid
+            gridshape='linear', # Pentagon shape
             radialaxis=dict(
                 visible=True,
                 range=[0, 10],
                 showticklabels=False,
-                gridcolor='lightgray',
-                showline=False
+                gridcolor='lightgray'
             ),
             angularaxis=dict(
-                gridcolor='lightgray',
-                showline=False
+                gridcolor='lightgray'
             ),
             bgcolor='rgba(0,0,0,0)'
         )
