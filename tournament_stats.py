@@ -49,18 +49,17 @@ def render_tournament_stats():
     with col_f4:
         sort_by = st.selectbox(
             "Sort By",
-            ("Total Picks", "Ban P1", "Win Rate"), # Updated options
+            ("Total Picks", "Ban P1", "Win Rate"), 
             key="filter_sort"
         )
 
     st.markdown("---")
 
     # ==========================================
-    # STATISTICS TABLE (Visual with Icons)
+    # STATISTICS TABLE
     # ==========================================
     st.markdown(f"### 📊 {selected_side} Side Statistics")
     
-    # Generate the summary dataframe
     df_summary = analyzer.get_hero_summary(
         side=selected_side,
         tournament_filter=selected_tournament,
@@ -71,22 +70,10 @@ def render_tournament_stats():
     if not df_summary.empty:
         # Sort
         ascending_order = False
-        # Map UI selection to DataFrame column
-        sort_col = sort_by
-        df_summary = df_summary.sort_values(by=sort_col, ascending=ascending_order).reset_index(drop=True)
+        df_summary = df_summary.sort_values(by=sort_by, ascending=ascending_order).reset_index(drop=True)
         
-        # Header Row - Simulating Merged Headers
-        # We use 3 rows for the header to create the visual grouping
-        # Row 1: Main Groups
-        # Row 2: Sub Headers
-        # Row 3: Separator
-        
-        # Layout Ratios: Icon(0.5) | Hero(1.5) | Pick(1.2) | Ban(1.2) | WinRate(0.8)
-        # Inside Pick: Upper(0.6), Lower(0.6)
-        # Inside Ban: Upper(0.6), Lower(0.6)
-        
-        # Row 1: Main Categories
-        cols_h1 = st.columns([0.5, 1.5, 1.2, 1.2, 0.8]) # Total width approx 5.2
+        # Header Row (Layered)
+        cols_h1 = st.columns([0.5, 1.5, 1.2, 1.2, 0.8])
         cols_h1[0].markdown("")
         cols_h1[1].markdown("")
         cols_h1[2].markdown("<div style='text-align: center; font-weight: bold;'>Pick</div>", unsafe_allow_html=True)
@@ -94,8 +81,6 @@ def render_tournament_stats():
         cols_h1[4].markdown("")
         
         # Row 2: Sub Headers
-        # We need more columns here to split Pick and Ban
-        # Layout: Icon | Hero | P1 | P2 | B1 | B2 | WR
         cols_h2 = st.columns([0.5, 1.5, 0.6, 0.6, 0.6, 0.6, 0.8])
         cols_h2[0].markdown("")
         cols_h2[1].markdown("<b>Hero</b>", unsafe_allow_html=True)
@@ -109,29 +94,28 @@ def render_tournament_stats():
         
         # Data Rows
         for index, row in df_summary.iterrows():
-            # Columns must match cols_h2 layout
             row_cols = st.columns([0.5, 1.5, 0.6, 0.6, 0.6, 0.6, 0.8])
             
-            # 1. Icon
+            # Icon
             with row_cols[0]:
                 display_icon_50px(row['Hero'])
             
-            # 2. Hero Name
+            # Hero
             row_cols[1].markdown(f"<div style='padding-top: 10px;'>{row['Hero']}</div>", unsafe_allow_html=True)
             
-            # 3. Pick Phase 1 (Upper)
+            # Pick Upper
             row_cols[2].markdown(f"<div style='padding-top: 10px; text-align: center;'>{row['Pick P1']}</div>", unsafe_allow_html=True)
             
-            # 4. Pick Phase 2 (Lower)
+            # Pick Lower
             row_cols[3].markdown(f"<div style='padding-top: 10px; text-align: center;'>{row['Pick P2']}</div>", unsafe_allow_html=True)
             
-            # 5. Ban Phase 1 (Upper)
+            # Ban Upper
             row_cols[4].markdown(f"<div style='padding-top: 10px; text-align: center;'>{row['Ban P1']}</div>", unsafe_allow_html=True)
             
-            # 6. Ban Phase 2 (Lower)
+            # Ban Lower
             row_cols[5].markdown(f"<div style='padding-top: 10px; text-align: center;'>{row['Ban P2']}</div>", unsafe_allow_html=True)
             
-            # 7. Win Rate
+            # Win Rate
             wr_str = f"{row['Win Rate']:.1f}%"
             row_cols[6].markdown(f"<div style='padding-top: 10px; text-align: center;'>{wr_str}</div>", unsafe_allow_html=True)
 
