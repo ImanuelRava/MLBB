@@ -4,18 +4,30 @@ import os
 
 class DataAnalyzer:
     def __init__(self):
-        self.matches = [] # Stores detailed data for filtering
+        self.matches = [] 
         self.hero_win_rates = collections.defaultdict(lambda: {'wins': 0, 'total': 0})
         self.is_loaded = False
         self.load_local_data()
 
+    def find_file(self, target_filename):
+        if os.path.exists(target_filename): return target_filename
+        cwd = os.getcwd()
+        files = os.listdir(cwd)
+        target_lower = target_filename.lower()
+        for f in files:
+            if f.lower() == target_lower: return f
+        return None
+
     def load_local_data(self):
         file_path = 'Analyst.xlsx'
-        if os.path.exists(file_path):
-            print(f"Found {file_path}. Processing tournament data...")
-            success, msg = self.process_file(file_path)
+        actual_path = self.find_file(file_path)
+        
+        if actual_path:
+            print(f"Found {actual_path}. Processing tournament data...")
+            success, msg = self.process_file(actual_path)
             if success:
                 print("Tournament data loaded successfully.")
+                self.is_loaded = True
             else:
                 print(f"Failed to load tournament data: {msg}")
         else:
@@ -56,11 +68,9 @@ class DataAnalyzer:
             col_blue_start = ban1_cols[0]
             col_red_start = ban1_cols[1]
             
-            # Team Names are usually in the column immediately before the Ban columns
             col_blue_team = col_blue_start - 1
             col_red_team = col_red_start - 1
             
-            # Process Data
             def clean_name(name):
                 if pd.isna(name): return ""
                 return str(name).strip()
@@ -70,42 +80,50 @@ class DataAnalyzer:
                     tournament = str(row.iloc[0]).strip()
                     selected_map = str(row.iloc[1]).strip()
                     
-                    # Extract Team Names
                     blue_team = clean_name(row.iloc[col_blue_team])
                     red_team = clean_name(row.iloc[col_red_team])
                     
-                    # Blue Side
-                    blue_bans = [clean_name(b) for b in row.iloc[col_blue_start : col_blue_start + 5].dropna().tolist()]
-                    blue_picks = [clean_name(p) for p in row.iloc[col_blue_start + 5 : col_blue_start + 10].dropna().tolist()]
-                    blue_result = str(row.iloc[col_blue_start + 10]).strip().upper()
+                    # Separate Bans (Phase 1: indices 0-2, Phase 2: indices 3-4)
+                    all_blue_bans = [clean_name(b) for b in row.iloc[col_blue_start : col_blue_start + 5].dropna().tolist()]
+                    blue_bans_p1 = all_blue_bans[:3]
+                    blue_bans_p2 = all_blue_bans[3:5]
                     
-                    # Red Side
-                    red_bans = [clean_name(b) for b in row.iloc[col_red_start : col_red_start + 5].dropna().tolist()]
-                    red_picks = [clean_name(p) for p in row.iloc[col_red_start + 5 : col_red_start + 10].dropna().tolist()]
+                    all_red_bans = [clean_name(b) for b in row.iloc[col_red_start : col_red_start + 5].dropna().tolist()]
+                    red_bans_p1 = all_red_bans[:3]
+                    red_bans_p2 = all_red_bans[3:5]
+
+                    # Separate Picks (Phase 1: indices 0-2, Phase 2: indices 3-4)
+                    all_blue_picks = [clean_name(p) for p in row.iloc[col_blue_start + 5 : col_blue_start + 10].dropna().tolist()]
+                    blue_picks_p1 = all_blue_picks[:3]
+                    blue_picks_p2 = all_blue_picks[3:5]
+
+                    all_red_picks = [clean_name(p) for p in row.iloc[col_red_start + 5 : col_red_start + 10].dropna().tolist()]
+                    red_picks_p1 = all_red_picks[:3]
+                    red_picks_p2 = all_red_picks[3:5]
+
+                    blue_result = str(row.iloc[col_blue_start + 10]).strip().upper()
                     red_result = str(row.iloc[col_red_start + 10]).strip().upper()
 
-                    # Store Match Data
                     self.matches.append({
                         'tournament': tournament,
                         'map': selected_map,
                         'blue_team': blue_team,
                         'red_team': red_team,
-                        'blue_bans': blue_bans,
-                        'blue_picks': blue_picks,
+                        'blue_bans': {'p1': blue_bans_p1, 'p2': blue_bans_p2},
+                        'blue_picks': {'p1': blue_picks_p1, 'p2': blue_picks_p2},
                         'blue_result': blue_result,
-                        'red_bans': red_bans,
-                        'red_picks': red_picks,
+                        'red_bans': {'p1': red_bans_p1, 'p2': red_bans_p2},
+                        'red_picks': {'p1': red_picks_p1, 'p2': red_picks_p2},
                         'red_result': red_result
                     })
                     
-                    # Update Global Win Rates
-                    self._update_hero_stats(blue_picks, blue_result)
-                    self._update_hero_stats(red_picks, red_result)
+                    # Win rates use total picks
+                    self._update_hero_stats(all_blue_picks, blue_result)
+                    self._update_hero_stats(all_red_picks, red_result)
 
                 except Exception:
                     continue
 
-            self.is_loaded = True
             return True, "Success"
             
         except Exception as e:
@@ -118,14 +136,11 @@ class DataAnalyzer:
                 self.hero_win_rates[hero]['wins'] += 1
 
     def get_unique_values(self, column, tournament_filter=None):
-        """Returns unique values for a specific column. Supports filtering teams by tournament."""
         if not self.matches: return []
         
-        # Special handling for 'team'
         if column == 'team':
             teams = set()
             for m in self.matches:
-                # If a tournament is selected, only add teams from that tournament
                 if tournament_filter and tournament_filter != "All" and m['tournament'] != tournament_filter:
                     continue
                 teams.add(m['blue_team'])
@@ -134,52 +149,22 @@ class DataAnalyzer:
             
         return sorted(list(set(m[column] for m in self.matches)))
 
-    def get_top_bans(self, side, phase, n=5, tournament_filter=None, map_filter=None, team_filter=None):
-        """Calculates top bans based on filters."""
-        data = []
-        
-        for match in self.matches:
-            if tournament_filter and tournament_filter != "All" and match['tournament'] != tournament_filter: continue
-            if map_filter and map_filter != "All" and match['map'] != map_filter: continue
-            if team_filter and team_filter != "All":
-                if side == 'blue' and match['blue_team'] != team_filter: continue
-                elif side == 'red' and match['red_team'] != team_filter: continue
-            
-            bans = match[f"{side.lower()}_bans"]
-            if phase == 1: data.extend(bans[:3])
-            else: data.extend(bans[3:5])
-                
-        return collections.Counter(data).most_common(n)
-
-    def get_top_picks(self, side, n=5, tournament_filter=None, map_filter=None, team_filter=None):
-        """Calculates top picks based on filters."""
-        data = []
-        
-        for match in self.matches:
-            if tournament_filter and tournament_filter != "All" and match['tournament'] != tournament_filter: continue
-            if map_filter and map_filter != "All" and match['map'] != map_filter: continue
-            if team_filter and team_filter != "All":
-                if side == 'blue' and match['blue_team'] != team_filter: continue
-                elif side == 'red' and match['red_team'] != team_filter: continue
-
-            picks = match[f"{side.lower()}_picks"]
-            data.extend(picks[:3])
-                
-        return collections.Counter(data).most_common(n)
-
     def get_hero_summary(self, side, tournament_filter=None, map_filter=None, team_filter=None):
         """
-        Generates a summary dataframe: [Hero, Picks, Bans, Win Rate (float)]
-        Returns a Pandas DataFrame.
+        Generates a summary dataframe with Phase 1 / Phase 2 breakdown.
         """
-        stats = collections.defaultdict(lambda: {'picks': 0, 'bans': 0, 'wins': 0})
+        stats = collections.defaultdict(lambda: {
+            'picks_p1': 0, 'picks_p2': 0, 
+            'bans_p1': 0, 'bans_p2': 0, 
+            'wins': 0, 'total_picks': 0
+        })
         
         for match in self.matches:
             # Apply Filters
             if tournament_filter and tournament_filter != "All" and match['tournament'] != tournament_filter: continue
             if map_filter and map_filter != "All" and match['map'] != map_filter: continue
             
-            target_picks, target_bans, target_result = [], [], None
+            target_picks, target_bans, target_result = None, None, None
             
             if side == 'Blue':
                 if team_filter and team_filter != "All" and match['blue_team'] != team_filter: continue
@@ -192,26 +177,39 @@ class DataAnalyzer:
                 target_bans = match['red_bans']
                 target_result = match['red_result']
 
-            # Aggregate
-            for hero in target_picks:
-                stats[hero]['picks'] += 1
+            # Aggregate Picks
+            for hero in target_picks['p1']:
+                stats[hero]['picks_p1'] += 1
+                stats[hero]['total_picks'] += 1
                 if target_result == 'WIN': stats[hero]['wins'] += 1
-            for hero in target_bans:
-                stats[hero]['bans'] += 1
+            
+            for hero in target_picks['p2']:
+                stats[hero]['picks_p2'] += 1
+                stats[hero]['total_picks'] += 1
+                if target_result == 'WIN': stats[hero]['wins'] += 1
+
+            # Aggregate Bans
+            for hero in target_bans['p1']:
+                stats[hero]['bans_p1'] += 1
+            
+            for hero in target_bans['p2']:
+                stats[hero]['bans_p2'] += 1
         
         # Build DataFrame
         data = []
         for hero, s in stats.items():
-            wr = (s['wins'] / s['picks'] * 100) if s['picks'] > 0 else 0.0
+            wr = (s['wins'] / s['total_picks'] * 100) if s['total_picks'] > 0 else 0.0
             data.append({
                 'Hero': hero,
-                'Picks': s['picks'],
-                'Bans': s['bans'],
-                'Win Rate': wr # Return float for sorting
+                'Pick P1': s['picks_p1'],
+                'Pick P2': s['picks_p2'],
+                'Ban P1': s['bans_p1'],
+                'Ban P2': s['bans_p2'],
+                'Total Picks': s['total_picks'], # For sorting
+                'Win Rate': wr
             })
         
-        df = pd.DataFrame(data)
-        return df
+        return pd.DataFrame(data)
 
     def get_hero_win_rate(self, hero_name):
         data = self.hero_win_rates.get(hero_name)
