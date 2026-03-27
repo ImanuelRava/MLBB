@@ -84,8 +84,7 @@ def render_analytics_panel(hero_stats, blue_team, red_team, blue_bans, red_bans)
         # ==========================================
         # ROW 3: ADVANTAGES (Side by Side)
         # ==========================================
-        # Removed the 'div' styling to remove the box appearance
-        st.markdown("<br>", unsafe_allow_html=True) # Small spacer
+        st.markdown("<br>", unsafe_allow_html=True)
         col_blue_adv, col_red_adv = st.columns(2)
 
         with col_blue_adv:

@@ -109,18 +109,20 @@ def render_comparison_mode(hero_stats):
     with col_search:
         search_query = st.text_input("🔍 Search Hero...", label_visibility="collapsed", key="comp_search")
 
-    # Row 2.2: Filters (Added from Simulation Mode logic)
-    # Extract unique roles and lanes from HERO_DATA
+    # Row 2.2: Filters
+    # FIX: Added None checks to prevent sorting errors
     roles = set()
     lanes = set()
     for hero_info in HERO_DATA.values():
-        roles.add(hero_info["Role 1"])
-        if hero_info["Role 2"] != "N/A":
-            roles.add(hero_info["Role 2"])
+        r1 = hero_info.get("Role 1")
+        r2 = hero_info.get("Role 2")
+        l1 = hero_info.get("Lane 1")
+        l2 = hero_info.get("Lane 2")
         
-        lanes.add(hero_info["Lane 1"])
-        if hero_info["Lane 2"] != "N/A":
-            lanes.add(hero_info["Lane 2"])
+        if r1 and r1 != "N/A": roles.add(r1)
+        if r2 and r2 != "N/A": roles.add(r2)
+        if l1 and l1 != "N/A": lanes.add(l1)
+        if l2 and l2 != "N/A": lanes.add(l2)
             
     sorted_roles = sorted(list(roles))
     sorted_lanes = sorted(list(lanes))
@@ -143,14 +145,14 @@ def render_comparison_mode(hero_stats):
     if selected_role != "All":
         available_heroes = [
             h for h in available_heroes 
-            if HERO_DATA[h]["Role 1"] == selected_role or HERO_DATA[h]["Role 2"] == selected_role
+            if HERO_DATA[h].get("Role 1") == selected_role or HERO_DATA[h].get("Role 2") == selected_role
         ]
         
     # Apply Lane Filter
     if selected_lane != "All":
         available_heroes = [
             h for h in available_heroes 
-            if HERO_DATA[h]["Lane 1"] == selected_lane or HERO_DATA[h]["Lane 2"] == selected_lane
+            if HERO_DATA[h].get("Lane 1") == selected_lane or HERO_DATA[h].get("Lane 2") == selected_lane
         ]
 
     # Display Heroes Grid

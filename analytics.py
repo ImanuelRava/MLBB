@@ -73,28 +73,9 @@ def get_advantage_explanations(blue_scores, red_scores):
         diff = b_val - r_val
 
         if diff >= 1.0:
-            if stat == "Durability":
-                blue_adv.append("Higher Durability")
-            elif stat == "Offense":
-                blue_adv.append("Higher Offense")
-            elif stat == "Crowd Control":
-                blue_adv.append("Stronger Crowd Control")
-            elif stat == "Mobility":
-                blue_adv.append("Superior Rotation")
-            elif stat == "Lane Control":
-                blue_adv.append("Higher Lane Control")
-                
+            blue_adv.append(f"Higher {stat}")
         elif diff <= -1.0:
-            if stat == "Durability":
-                red_adv.append("Higher Durability")
-            elif stat == "Offense":
-                red_adv.append("Higher Offense")
-            elif stat == "Crowd Control":
-                red_adv.append("Stronger Crowd Control")
-            elif stat == "Mobility":
-                red_adv.append("Superior Rotation")
-            elif stat == "Lane Control":
-                red_adv.append("Higher Lane Control")
+            red_adv.append(f"Higher {stat}")
             
     return blue_adv, red_adv
 
@@ -185,9 +166,7 @@ def get_team_suggestion(hero_stats, my_team, opp_team, own_bans, opp_bans):
 def create_radar_chart(stats_df_long):
     """
     Creates a spider/radar chart with a PENTAGONAL border.
-    Table removed per request.
     """
-    
     # 1. Prepare Data
     df_wide = stats_df_long.pivot(index='Metric', columns='Team', values='Score').reset_index()
     
@@ -204,7 +183,7 @@ def create_radar_chart(stats_df_long):
     blue_vals_closed = blue_vals + [blue_vals[0]]
     red_vals_closed = red_vals + [red_vals[0]]
     
-    # 2. Create Figure (Simple Figure, no subplots)
+    # 2. Create Figure
     fig = go.Figure()
 
     # 3. Add Radar Traces
